@@ -11,10 +11,10 @@ module.exports = {
         serif: ['Playfair\\ Display'],
       },
       colors: {
-        offWhite1: '#efd7bc',
+        offWhite: '#E3E3E3',
         offWhite2: '#fffeff',
         justBlack: '#242929',
-        accentBlue: '#5382f6',
+        accentBlue: '#54657E',
       },
     },
   },

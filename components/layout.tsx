@@ -11,9 +11,9 @@ const Layout = ({ children }: LayoutProps) => {
       <Head>
         <title>Bike Rent</title>
       </Head>
-      <div>
-        <Navbar />
-        <main className="pt-40">{children}</main>
+      <div className="relative z-20">
+        <Navbar className="z-0" />
+        <main className="">{children}</main>
       </div>
     </>
   );
