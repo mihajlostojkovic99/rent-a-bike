@@ -36,25 +36,37 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
     },
     typography: {
       fontFamily: ['Inter', 'Poppins', 'sans-serif'].join(','),
+      body1: {
+        'fontSize': '1.25rem',
+        '@media (min-width: 1024px)': {
+          fontSize: '1rem',
+        },
+      },
     },
   });
 
   return (
     <div
       className={cx(
-        'mx-auto flex h-32 max-w-7xl rounded-3xl bg-offWhite text-base text-black',
+        'mx-auto flex max-w-7xl rounded-lg bg-offWhite text-base text-black lg:h-32 lg:rounded-3xl',
         className,
       )}
     >
-      <div className="my-auto mx-7 flex">
-        <div className="mx-4">
-          <div className="mb-2 ml-1">Type</div>
+      <div className="my-auto mx-auto flex w-full flex-col justify-between text-xl lg:mx-7 lg:flex-row lg:text-base">
+        <div className="mt-3 text-center text-2xl font-bold text-justBlack lg:hidden">
+          Find a bike
+        </div>
+        <div className="mx-1 2xl:mx-4">
+          <div className="mb-2 mt-5 ml-1 text-center font-semibold text-accentBlue lg:mt-0 lg:text-left lg:font-normal lg:text-justBlack">
+            Type
+          </div>
           <Dropdown
             items={['Cross country', 'Road', 'City']}
             item={'Cross country'}
             renderItem={(item) => {
               return <span>{item}</span>;
             }}
+            className="w-full lg:w-fit"
           />
           {/* <select className="select m-0 w-full max-w-xs py-0">
             <option disabled selected>
@@ -68,8 +80,10 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
           </select> */}
         </div>
 
-        <div className="mx-4">
-          <div className="mb-2 ml-1">Pick up {'&'} return</div>
+        <div className="mx-1 2xl:mx-4">
+          <div className="mb-2 mt-5 ml-1 text-center font-semibold text-accentBlue lg:mt-0 lg:text-left lg:font-normal lg:text-justBlack">
+            Pick up {'&'} return
+          </div>
           <Dropdown
             items={[
               'Ada Ciganlija, Beograd',
@@ -80,6 +94,7 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
             renderItem={(item) => {
               return <span>{item}</span>;
             }}
+            className="w-full lg:w-fit"
           />
         </div>
         {/* React DayPicker (light)
@@ -89,8 +104,10 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
         carbon design date picker (IBM???)
         AntDesign date picker (imaju i odvojen time picker)
         react-calendar (light & fast) */}
-        <div className="mx-4">
-          <div className="mb-2 ml-1">Pick up time</div>
+        <div className="mx-1 2xl:mx-4">
+          <div className="mb-2 mt-5 ml-1 text-center font-semibold text-accentBlue lg:mt-0 lg:text-left lg:font-normal lg:text-justBlack">
+            Pick up time
+          </div>
           <div className="flex items-center gap-1">
             <ThemeProvider theme={theme}>
               <DateTimePicker
@@ -98,7 +115,7 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
                   <TextField
                     {...props}
                     size="small"
-                    className="w-52 tracking-tight"
+                    className="w-full tracking-tight lg:w-52"
                   />
                 )}
                 value={startTime}
@@ -113,8 +130,8 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
             </ThemeProvider>
           </div>
         </div>
-        <div className="mx-4">
-          <label className="label mb-2 ml-1 cursor-pointer justify-start p-0">
+        <div className="mx-1 2xl:mx-4">
+          <label className="label mt-5 mb-2 ml-1 cursor-pointer justify-start p-0 lg:mt-0">
             <input
               type="checkbox"
               className="checkbox checkbox-accent checkbox-sm mr-2"
@@ -126,22 +143,24 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
             <span>Same day return</span>
           </label>
           {sameDayReturn ? (
-            <TimePicker
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  size="small"
-                  className="w-52 tracking-tight"
-                />
-              )}
-              value={endTime}
-              onChange={(newValue) => {
-                setEndTime(newValue);
-              }}
-              minTime={startTime}
-              minutesStep={5}
-              ampm={false}
-            />
+            <ThemeProvider theme={theme}>
+              <TimePicker
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    size="small"
+                    className="w-full tracking-tight lg:w-52"
+                  />
+                )}
+                value={endTime}
+                onChange={(newValue) => {
+                  setEndTime(newValue);
+                }}
+                minTime={startTime}
+                minutesStep={5}
+                ampm={false}
+              />
+            </ThemeProvider>
           ) : (
             <ThemeProvider theme={theme}>
               <DateTimePicker
@@ -149,7 +168,7 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
                   <TextField
                     {...props}
                     size="small"
-                    className="w-52 tracking-tight"
+                    className="w-full tracking-tight lg:w-52"
                   />
                 )}
                 value={endTime}
@@ -164,21 +183,26 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
             </ThemeProvider>
           )}
         </div>
-        <div className="mx-4">
-          <div className="mb-2 ml-1">Sort</div>
+        <div className="mx-1 2xl:mx-4">
+          <div className="mb-2 mt-5 ml-1 text-center font-semibold text-accentBlue lg:mt-0 lg:text-left lg:font-normal lg:text-justBlack">
+            Sort
+          </div>
           <Dropdown
             items={['Price ascending', 'Price descending', 'Popularity']}
             item={'Price ascending'}
             renderItem={(item) => {
               return <span>{item}</span>;
             }}
+            className="w-full lg:w-fit"
           />
         </div>
-        <div className=" my-auto ml-12">
+        <div className=" mx-2 mt-8 mb-5 lg:my-auto lg:ml-12 lg:mr-0">
           {/* <Button className="absolute bottom-0 my-auto h-[40px] w-28 p-0 text-xl font-semibold tracking-wider text-offWhite">
             Search
           </Button> */}
-          <button className="btn btn-accent h-[40px] w-28">Search</button>
+          <button className="btn btn-accent h-16 w-full text-3xl lg:h-10 lg:w-28 lg:text-base">
+            Search
+          </button>
         </div>
       </div>
     </div>

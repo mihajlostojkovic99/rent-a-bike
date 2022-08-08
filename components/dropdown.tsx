@@ -29,7 +29,7 @@ const Dropdown = function <T>({
       <Menu>
         <Menu.Button
           className={cx(
-            'relative h-[40px] rounded-[4px] border border-black/[0.23] py-1 pl-1 tracking-tight hover:border-justBlack',
+            'relative flex h-[2.875rem] items-center justify-between overflow-hidden rounded-[4px] border border-black/[0.23] py-1 pl-1 tracking-tight hover:border-justBlack lg:h-10',
             { relative: absoluteDropdown === false },
             className,
           )}

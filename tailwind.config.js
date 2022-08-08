@@ -31,8 +31,6 @@ module.exports = {
           'base-100': '#ffffff',
         },
       },
-      // 'emerald',
-      // 'lemonade',
     ],
   },
 };
