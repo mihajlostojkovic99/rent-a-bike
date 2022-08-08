@@ -9,7 +9,7 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <>
       <Head>
-        <title>Bike Rent</title>
+        <title>GoBike</title>
       </Head>
       <div className="relative z-20">
         <Navbar className="z-0" />

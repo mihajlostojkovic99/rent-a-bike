@@ -1,14 +1,8 @@
 .searchbox {
     background: rgb(255,255,255);
-    background: linear-gradient(to bottom right, rgba(255,255,255,0.4009978991596639) 0%, rgba(255,255,255,0) 100%);
-    outline: solid;
-    outline-width: 1px;
-    outline-color: rgb(255,255,255);
-    // filter: drop-shadow(0px 4px 5px rgba(0, 0, 0, 40%));
-    backdrop-filter: blur(8px);
-    
-    
-}
-.searchbox > * {
-    filter: none;
+    background: linear-gradient(to bottom right, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.03) 100%);
+    backdrop-filter: blur(5px);
+    border: solid 2px transparent;
+    background-clip: padding-box;
+    box-shadow: 10px 10px 10px rgba(46, 54, 68, 0.1);
 }

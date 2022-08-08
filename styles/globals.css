@@ -7,5 +7,5 @@
 
 html,
 body {
-  @apply font-sans bg-white text-white min-h-screen;
+  @apply font-sans bg-darkBlue text-offWhite min-h-screen;
 }
