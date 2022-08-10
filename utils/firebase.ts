@@ -4,6 +4,8 @@ import { getAnalytics } from 'firebase/analytics';
 import { getPerformance } from 'firebase/performance';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage, ref } from 'firebase/storage';
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -25,3 +27,5 @@ export const firebase = initializeApp(firebaseConfig);
 // const perf = getPerformance(firebase);
 export const auth = getAuth(firebase);
 export const db = getFirestore(firebase);
+export const storage = getStorage(firebase);
+export const profilePictures = ref(storage, 'profilePictures');

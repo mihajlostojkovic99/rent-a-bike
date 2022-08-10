@@ -7,6 +7,8 @@ import { auth } from '../utils/firebase';
 import { useRouter } from 'next/router';
 import { useAuth } from '../utils/useAuth';
 import { useForm } from 'react-hook-form';
+import { profilePictures } from '../utils/firebase';
+import { ref, uploadBytes } from 'firebase/storage';
 
 type FormData = {
   email: string;
@@ -28,17 +30,28 @@ const RegisterPage: NextPage = () => {
     watch,
   } = useForm<FormData>();
 
+  const [photo, setPhoto] = useState<File | null | undefined>(null);
+
   const onSubmit = (data: FormData) => {
-    console.log(data);
+    // console.log(data);
 
     signUp(data.email, data.password)
       .then((userCredential) => {
         const user = userCredential!.user;
 
-        // Da li moze nekako da se izvrsi sinhrono????????
+        // Da li moze nekako lepse da se zapise????????
+        //Loading spinner kako??????
         updateProfile(user, {
           displayName: `${data.firstName} ${data.lastName}`,
-        }).then(() => router.push('/'));
+        }).then(() => {
+          if (photo) {
+            const photoRef = ref(
+              profilePictures,
+              `${user.uid}.${photo.type === 'image/png' ? 'png' : 'jpg'}`,
+            );
+            uploadBytes(photoRef, photo).then(() => router.push('/'));
+          } else router.push('/');
+        });
       })
       .catch((error) => {
         const errorCode = error.code;
@@ -171,7 +184,11 @@ const RegisterPage: NextPage = () => {
           </label>
           <label className="btn btn-outline btn-accent w-full text-lg normal-case">
             Upload profile image
-            <input type="file" className="hidden" />
+            <input
+              type="file"
+              className="hidden"
+              onChange={(e) => setPhoto(e.target.files?.item(0))}
+            />
           </label>
         </div>
 
