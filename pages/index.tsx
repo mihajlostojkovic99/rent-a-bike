@@ -1,10 +1,11 @@
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import Button from '../components/button';
 import Layout from '../components/layout';
 import Searchbox from '../components/searchbox';
 import bike from '../public/bg_bike.jpg';
+import { firebase, auth } from '../utils/firebase';
+import { useAuth } from '../utils/useAuth';
 
 const Home: NextPage = () => {
   return (
@@ -31,7 +32,7 @@ const Home: NextPage = () => {
               {/* <Button className="mt-20 h-24 w-72 text-5xl outline outline-2 outline-white/40">
                 Join now
               </Button> */}
-              <Link href="/register" passHref>
+              <Link href="/signup" passHref>
                 <button className="btn btn-accent mt-12 h-16 w-48 text-3xl normal-case outline outline-2 outline-white/40 lg:mt-20 lg:h-24 lg:w-72 lg:text-5xl">
                   Join now
                 </button>

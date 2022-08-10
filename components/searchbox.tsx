@@ -19,7 +19,6 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
   const [startTime, setStartTime] = useState<Date | null>(new Date());
   const [endTime, setEndTime] = useState<Date | null>(new Date());
   const [sameDayReturn, setSameDayReturn] = useState<boolean>(true);
-  console.log(sameDayReturn);
 
   const theme = createTheme({
     palette: {
