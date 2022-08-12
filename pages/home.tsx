@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Layout from '../components/layout';
 import Searchbox from '../components/searchbox';
 import bike from '../public/home_bike.jpg';
-import { firebase, auth } from '../utils/firebase';
 import { useAuth } from '../utils/useAuth';
 
 const Home: NextPage = () => {
@@ -42,7 +41,7 @@ const Home: NextPage = () => {
               </div>
             </div>
             <div className="mt-3 text-center text-lg font-light lg:w-4/6 lg:text-left">
-              Search from a wide range of bikes available at our shops all
+              Search from a wide range of bikes available at our locations all
               around Serbia!
             </div>
           </div>

@@ -2,13 +2,12 @@ import type { NextPage } from 'next';
 import Image from 'next/image';
 import { useState } from 'react';
 import Layout from '../components/layout';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '../utils/firebase';
-import { useRouter } from 'next/router';
+import { updateProfile } from 'firebase/auth';
+import { Router, useRouter } from 'next/router';
 import { useAuth } from '../utils/useAuth';
 import { useForm } from 'react-hook-form';
 import { profilePictures } from '../utils/firebase';
-import { ref, uploadBytes } from 'firebase/storage';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 type FormData = {
   email: string;
@@ -49,7 +48,17 @@ const RegisterPage: NextPage = () => {
               profilePictures,
               `${user.uid}.${photo.type === 'image/png' ? 'png' : 'jpg'}`,
             );
-            uploadBytes(photoRef, photo).then(() => router.push('/'));
+            const uploadTask = uploadBytes(photoRef, photo);
+            uploadTask.then((res) => {
+              getDownloadURL(res.ref).then((url) => {
+                console.log(url);
+                updateProfile(user, {
+                  photoURL: url,
+                }).then(() => {
+                  router.push('/');
+                });
+              });
+            });
           } else router.push('/');
         });
       })

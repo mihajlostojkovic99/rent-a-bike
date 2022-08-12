@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Layout from '../components/layout';
 import Searchbox from '../components/searchbox';
 import bike from '../public/bg_bike.jpg';
-import { firebase, auth } from '../utils/firebase';
 import { useAuth } from '../utils/useAuth';
 import Router from 'next/router';
 
@@ -41,7 +40,7 @@ const Home: NextPage = () => {
                 Join now
               </Button> */}
               <Link href="/signup" passHref>
-                <button className="btn btn-accent mt-12 h-16 w-48 text-3xl normal-case outline outline-2 outline-white/40 lg:mt-20 lg:h-24 lg:w-72 lg:text-5xl">
+                <button className="btn outline btn-accent mt-12 h-16 w-48 text-3xl normal-case outline-2 outline-white/40 lg:mt-20 lg:h-24 lg:w-72 lg:text-5xl">
                   Join now
                 </button>
               </Link>
