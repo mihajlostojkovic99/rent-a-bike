@@ -23,7 +23,7 @@ const NavMenu = () => {
             )}
             tabIndex={0}
           >
-            <div className="mask mask-squircle w-14 bg-accentBlue">
+            <div className="mask mask-squircle w-14 bg-accentBlue ring ring-accent">
               {user.photoURL ? (
                 <Image
                   src={user.photoURL}
@@ -52,7 +52,7 @@ const NavMenu = () => {
             )}
             tabIndex={0}
           >
-            <div className="mask mask-squircle w-14 bg-accentBlue">
+            <div className="mask mask-squircle w-14 bg-accentBlue ring ring-accent">
               {user.photoURL ? (
                 <Image
                   src={user.photoURL}

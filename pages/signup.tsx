@@ -17,7 +17,7 @@ type FormData = {
   password2: string;
 };
 
-const RegisterPage: NextPage = () => {
+const SignupPage: NextPage = () => {
   const router = useRouter();
 
   const { signUp } = useAuth();
@@ -216,4 +216,4 @@ const RegisterPage: NextPage = () => {
   );
 };
 
-export default RegisterPage;
+export default SignupPage;

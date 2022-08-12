@@ -27,7 +27,7 @@ const Home: NextPage = () => {
         </div>
 
         <div className="min-h-screen lg:mx-auto lg:max-w-7xl">
-          <div className=" h-[530px] w-full lg:mt-10 lg:h-[450px] lg:w-5/12 xl:w-3/5">
+          <div className=" h-[530px] w-full lg:mt-10 lg:h-[450px] lg:w-5/12 lg:pt-20 xl:w-3/5">
             <div className="mx-auto flex w-fit flex-col items-center text-center text-4xl font-extrabold tracking-tight text-white lg:text-left xl:text-5xl 2xl:text-6xl">
               <div>
                 Welcome{' '}

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Router from 'next/router';
 import { useAuth } from '../utils/useAuth';
 
@@ -7,7 +8,9 @@ const NavMenuList = () => {
   return (
     <>
       <li>
-        <a>My profile</a>
+        <Link href="user">
+          <a>My profile</a>
+        </Link>
       </li>
       <li>
         <a
