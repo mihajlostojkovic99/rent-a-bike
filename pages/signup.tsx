@@ -197,6 +197,7 @@ const SignupPage: NextPage = () => {
               type="file"
               className="hidden"
               onChange={(e) => setPhoto(e.target.files?.item(0))}
+              accept="image/png, image/jpeg"
             />
           </label>
         </div>
