@@ -6,8 +6,14 @@ import Searchbox from '../components/searchbox';
 import bike from '../public/bg_bike.jpg';
 import { firebase, auth } from '../utils/firebase';
 import { useAuth } from '../utils/useAuth';
+import Router from 'next/router';
 
 const Home: NextPage = () => {
+  const { user } = useAuth();
+  console.log(user);
+  if (user) {
+    Router.push('home');
+  }
   return (
     <>
       <Layout>
@@ -20,9 +26,11 @@ const Home: NextPage = () => {
                 layout="fill"
                 objectFit="cover"
                 objectPosition="bottom"
+                placeholder="blur"
+                // priority
               ></Image>
               <div className="absolute bottom-0 h-24 w-full bg-gradient-to-t from-darkBlue lg:h-60"></div>
-              <div className="navGradient absolute top-40 h-56 w-full"></div>
+              <div className="imgGradientTopToBottom absolute top-40 h-56 w-full"></div>
             </div>
           </div>
 

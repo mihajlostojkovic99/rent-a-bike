@@ -11,7 +11,7 @@ const Layout = ({ children }: LayoutProps) => {
       <Head>
         <title>GoBike</title>
       </Head>
-      <div className="relative z-20">
+      <div className="relative z-20 overflow-x-hidden">
         <Navbar className="z-0" />
         <main className="">{children}</main>
       </div>
