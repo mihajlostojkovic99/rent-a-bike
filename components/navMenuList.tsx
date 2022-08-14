@@ -8,6 +8,11 @@ const NavMenuList = () => {
   return (
     <>
       <li>
+        <Link href="home">
+          <a>Home</a>
+        </Link>
+      </li>
+      <li>
         <Link href="user">
           <a>My profile</a>
         </Link>

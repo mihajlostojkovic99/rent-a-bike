@@ -15,7 +15,8 @@ const NavMenu = () => {
         <>
           <Avatar
             htmlFor={window.innerWidth < 1024 ? 'my-drawer' : ''}
-            className="dropdown-end dropdown-hover dropdown mr-5"
+            className="dropdown-hover dropdown-end dropdown mr-5"
+            rounded
           >
             <ul
               tabIndex={0}

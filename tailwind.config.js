@@ -17,6 +17,7 @@ module.exports = {
         accentBlue: '#008CEE',
         darkBlue: '#041522',
         gold: '#FFD700',
+        redDanger: '#820000',
       },
     },
   },

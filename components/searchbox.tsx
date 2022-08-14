@@ -6,8 +6,10 @@ import { TextField } from '@mui/material';
 import { DateTimePicker, TimePicker } from '@mui/x-date-pickers';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 // import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
+import { muiTheme as theme } from '../utils/datePicker';
 import { useState } from 'react';
 import Button from './button';
+
 // import { ChevronDownIcon } from '@heroicons/react/solid';
 
 type SearchboxProps = {
@@ -20,29 +22,29 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
   const [endTime, setEndTime] = useState<Date | null>(new Date());
   const [sameDayReturn, setSameDayReturn] = useState<boolean>(true);
 
-  const theme = createTheme({
-    palette: {
-      background: {
-        paper: '#E3E3E3',
-      },
-      text: {
-        primary: '#242929',
-        secondary: '#46505A',
-      },
-      action: {
-        active: '#242929',
-      },
-    },
-    typography: {
-      fontFamily: ['Inter', 'Poppins', 'sans-serif'].join(','),
-      body1: {
-        'fontSize': '1.25rem',
-        '@media (min-width: 1024px)': {
-          fontSize: '1rem',
-        },
-      },
-    },
-  });
+  // const theme = createTheme({
+  //   palette: {
+  //     background: {
+  //       paper: '#E3E3E3',
+  //     },
+  //     text: {
+  //       primary: '#242929',
+  //       secondary: '#46505A',
+  //     },
+  //     action: {
+  //       active: '#242929',
+  //     },
+  //   },
+  //   typography: {
+  //     fontFamily: ['Inter', 'Poppins', 'sans-serif'].join(','),
+  //     body1: {
+  //       'fontSize': '1.25rem',
+  //       '@media (min-width: 1024px)': {
+  //         fontSize: '1rem',
+  //       },
+  //     },
+  //   },
+  // });
 
   return (
     <div
