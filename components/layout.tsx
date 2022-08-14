@@ -21,9 +21,9 @@ const Layout = ({ children }: LayoutProps) => {
         <div className="drawer-side lg:hidden">
           <label
             htmlFor="my-drawer"
-            className="drawer-overlay backdrop-blur-sm"
+            className="drawer-overlay backdrop-blur-sm lg:hidden"
           ></label>
-          <ul className="menu w-80 overflow-y-auto bg-accent p-4 font-bold">
+          <ul className="menu w-80 overflow-y-auto bg-accent p-4 font-bold lg:hidden">
             <NavMenuList />
           </ul>
         </div>
