@@ -8,7 +8,9 @@ import {
   User as FirebaseUser,
   UserCredential,
 } from 'firebase/auth';
+import nookies from 'nookies';
 import { auth } from './firebase';
+import { async } from '@firebase/util';
 
 type Auth = {
   user: FirebaseUser | null | undefined;
@@ -63,8 +65,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        setUser(null);
+        nookies.set(undefined, 'token', '', {});
+        return;
+      }
+
       setUser(user);
+      const token = await user.getIdToken();
+      nookies.set(undefined, 'token', token, {});
+
       setLoading(false);
     });
 
