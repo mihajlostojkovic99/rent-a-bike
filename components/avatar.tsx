@@ -10,6 +10,7 @@ type AvatarProps = {
   classNameText?: string;
   rounded?: boolean;
   imageSrc?: string | null | ArrayBuffer;
+  priority?: boolean;
   children?: React.ReactNode | React.ReactNode[];
 };
 
@@ -20,6 +21,7 @@ const Avatar = ({
   className,
   rounded,
   imageSrc,
+  priority,
   children,
 }: AvatarProps) => {
   const { user } = useAuth();
@@ -44,7 +46,9 @@ const Avatar = ({
           <Image
             src={
               typeof imageSrc === 'string'
-                ? imageSrc
+                ? imageSrc.includes('diplomski-2022')
+                  ? imageSrc
+                  : imageSrc.substring(0, user.photoURL.length - 6)
                 : user?.photoURL?.includes('diplomski-2022')
                 ? user.photoURL
                 : user?.photoURL?.substring(0, user.photoURL.length - 6)
@@ -57,6 +61,7 @@ const Avatar = ({
             objectFit="cover"
             objectPosition="bottom"
             className={rounded ? 'rounded-full' : ''}
+            priority={priority}
           />
         ) : typeof imageSrc === 'string' ? (
           <Image
@@ -66,6 +71,7 @@ const Avatar = ({
             objectFit="cover"
             objectPosition="bottom"
             className={rounded ? 'rounded-full' : ''}
+            priority={priority}
           />
         ) : (
           <div

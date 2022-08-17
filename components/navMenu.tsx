@@ -17,6 +17,7 @@ const NavMenu = () => {
             htmlFor={window.innerWidth < 1024 ? 'my-drawer' : ''}
             className="dropdown-hover dropdown-end dropdown mr-5"
             rounded
+            priority
           >
             <ul
               tabIndex={0}

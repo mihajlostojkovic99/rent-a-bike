@@ -1,11 +1,6 @@
 import { TextField, ThemeProvider } from '@mui/material';
-import { DateTimePicker, DatePicker } from '@mui/x-date-pickers';
-import {
-  NextPage,
-  GetServerSideProps,
-  InferGetServerSidePropsType,
-} from 'next';
-import Image from 'next/image';
+import { DatePicker } from '@mui/x-date-pickers';
+import { GetServerSideProps } from 'next';
 import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import Avatar from '../components/avatar';
@@ -19,11 +14,14 @@ import {
   DocumentSnapshot,
   getDoc,
   Timestamp,
+  updateDoc,
 } from 'firebase/firestore';
-import card from '../public/card.jpg';
 import nookies from 'nookies';
+import cx from 'classnames';
 import { differenceInDays, differenceInYears } from 'date-fns';
 import { verifyIdToken } from '../utils/firebaseAdmin';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { updateProfile } from 'firebase/auth';
 
 type FormData = {
   firstName: string;
@@ -35,31 +33,30 @@ type FormData = {
 };
 
 type UserPageProps = {
-  // aboutMe: string;
-  // birthday: {
-  //   seconds: number;
-  //   nanoseconds: number;
-  // };
-  data: DocumentSnapshot<DocumentData>;
-  sthElse: string;
-  // birthday: Date;
-  // error: boolean;
+  userDetails: UserData;
 };
 
-const UserPage = ({
-  test,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const UserPage = ({ userDetails }: UserPageProps) => {
   const { user } = useAuth();
-  // console.log(new Date(birthday.seconds * 1000));
-  // const birthdayTimestamp: Timestamp = new Timestamp(
-  //   birthdayJSON.seconds,
-  //   birthdayJSON.nanoseconds,
-  // );
-  // const birthday: Date = birthdayTimestamp.toDate();
-  // console.log(date.toDate());
-  console.log(test);
-  // console.log(error);
-  // console.log(user);
+  const {
+    uid,
+    displayName,
+    photoURL,
+    aboutMe,
+    balance,
+    birthday,
+    createdAt,
+    city,
+    reviews,
+    rides,
+  } = {
+    ...userDetails,
+    birthday: userDetails.birthday ? new Date(userDetails.birthday) : null,
+    createdAt: new Date(userDetails.createdAt),
+    city: userDetails.city ? userDetails.city : 'Unknown',
+    aboutMe: userDetails.aboutMe ? userDetails.aboutMe : '',
+  };
+  // console.log(userDetails);
   const {
     register,
     handleSubmit,
@@ -69,36 +66,80 @@ const UserPage = ({
     reset,
   } = useForm<FormData>({
     defaultValues: {
-      firstName: user?.displayName?.split(' ')[0],
-      lastName: user?.displayName?.split(' ')[1],
-      birthday: new Date(1999, 9, 8),
-      city: 'Belgrade',
-      aboutMe: 'aboutMe',
+      firstName: displayName.split(' ')[0],
+      lastName: displayName.split(' ')[1],
+      birthday: birthday ? birthday : new Date(),
+      city: city,
+      aboutMe: aboutMe,
     },
   });
   const newPicture = watch('profilePicture');
-  const [imgURL, setImgURL] = useState<string | null | ArrayBuffer>(null);
   const [editMode, setEditMode] = useState<boolean>(false);
-  const creationDate = new Date(user?.metadata.creationTime!);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const getImgURL = (img: File[]) => {
-    const fileReader = new FileReader();
-    fileReader.addEventListener('load', () => {
-      setImgURL(fileReader.result);
-    });
-    if (img[0]) {
-      fileReader.readAsDataURL(img[0]);
+  const onSubmit = async (data: FormData) => {
+    setLoading(true);
+    const newName = `${data.firstName} ${data.lastName}`;
+    const userRef = doc(db, 'users', uid);
+
+    if (data.profilePicture && data.profilePicture.length > 0) {
+      const photoRef = ref(
+        profilePictures,
+        `${uid}.${data.profilePicture[0].type === 'image/png' ? 'png' : 'jpg'}`,
+      );
+      const uploadTask = await uploadBytes(photoRef, data.profilePicture[0]);
+      await getDownloadURL(uploadTask.ref)
+        .then(async (url) => {
+          await updateDoc(userRef, {
+            photoURL: url,
+            displayName: newName,
+            aboutMe: data.aboutMe,
+            birthday: Timestamp.fromDate(data.birthday),
+            city: data.city,
+          });
+          if (user) {
+            await updateProfile(user, {
+              displayName: newName,
+              photoURL: url,
+            });
+          }
+        })
+        .finally(() => {
+          setLoading(true);
+          setEditMode(false);
+        });
+    } else {
+      if (user) {
+        await updateProfile(user, {
+          displayName: newName,
+        });
+        await updateDoc(userRef, {
+          displayName: newName,
+          aboutMe: data.aboutMe,
+          birthday: Timestamp.fromDate(data.birthday),
+          city: data.city,
+        });
+        setLoading(true);
+        setEditMode(false);
+      } else {
+        await updateDoc(userRef, {
+          displayName: newName,
+          aboutMe: data.aboutMe,
+          birthday: Timestamp.fromDate(data.birthday),
+          city: data.city,
+        });
+        setLoading(true);
+        setEditMode(false);
+      }
     }
+
+    // setEditMode(false);
   };
 
-  const onSubmit = (data: FormData) => {
-    console.log(data);
-    setEditMode(false);
-  };
+  // console.log(user);
 
   return (
     <>
-      {newPicture && getImgURL(newPicture)}
       <Layout>
         <div className="mx-auto min-h-screen tracking-tight text-justBlack lg:max-w-7xl">
           <div className="mx-2 rounded-md bg-offWhite p-3 lg:mx-0 lg:grid lg:grid-cols-[minmax(0,_3fr)_3fr_2fr] lg:grid-rows-[15rem_15rem_15rem] lg:gap-6 lg:rounded-3xl lg:p-6">
@@ -107,13 +148,17 @@ const UserPage = ({
               className="lg:row-span-3 lg:h-full lg:w-full"
             >
               <div className="flex w-full flex-col rounded-md bg-accentBlue/10 p-3 lg:h-full lg:rounded-3xl xl:p-6">
-                <div>
+                <div className="relative">
                   {editMode ? (
                     <Avatar
                       className="indicator my-1"
                       classNameSize="w-40"
                       classNameText="text-7xl"
-                      imageSrc={imgURL}
+                      imageSrc={
+                        newPicture && newPicture.length > 0
+                          ? URL.createObjectURL(newPicture[0])
+                          : null
+                      }
                     >
                       <input
                         {...register('profilePicture')}
@@ -127,9 +172,11 @@ const UserPage = ({
                     </Avatar>
                   ) : (
                     <Avatar
+                      imageSrc={photoURL}
                       className="my-1"
                       classNameSize="w-40 xl:w-56"
                       classNameText="text-7xl"
+                      priority
                     />
                   )}
                 </div>
@@ -170,7 +217,7 @@ const UserPage = ({
                     </div>
                   ) : (
                     <>
-                      {user?.displayName}{' '}
+                      {displayName}{' '}
                       <sup className="text-base font-extrabold text-gold lg:text-base xl:text-xl">
                         GOLD
                       </sup>
@@ -205,6 +252,7 @@ const UserPage = ({
                                 onChange={(newDate) => {
                                   onChange(newDate);
                                 }}
+                                label="Birthday"
                               />
                               {errors.birthday && (
                                 <span>{errors.birthday.message}</span>
@@ -215,7 +263,9 @@ const UserPage = ({
                       </ThemeProvider>
                     ) : (
                       <span className="font-normal">
-                        {differenceInYears(new Date(), new Date(1999, 9, 8))}
+                        {birthday
+                          ? differenceInYears(new Date(), birthday)
+                          : 'Unknown'}
                       </span>
                     )}
                   </div>
@@ -228,7 +278,7 @@ const UserPage = ({
                         className="input input-bordered input-accent input-sm w-48 rounded-[4px] border-black/[0.23] bg-transparent"
                       />
                     ) : (
-                      <span className="font-normal">Belgrade</span>
+                      <span className="font-normal">{city}</span>
                     )}
                   </div>
                 </div>
@@ -241,13 +291,18 @@ const UserPage = ({
                       maxLength={400}
                     ></textarea>
                   ) : (
-                    <div>{'aboutMe'}</div>
+                    <div>{aboutMe}</div>
                   )}
                 </div>
                 {editMode ? (
                   <div className="btn-group w-full">
                     <button
-                      className="btn btn-accent mt-3 grow text-lg normal-case lg:rounded-2xl"
+                      className={cx(
+                        'btn btn-accent mt-3 grow text-lg normal-case lg:rounded-2xl',
+                        {
+                          loading: loading,
+                        },
+                      )}
                       type="submit"
                     >
                       Accept
@@ -256,7 +311,6 @@ const UserPage = ({
                       data-theme="dangertheme"
                       onClick={() => {
                         reset();
-                        setImgURL(null);
                         setEditMode(false);
                       }}
                       className="btn btn-accent mt-3 grow text-lg normal-case lg:rounded-2xl"
@@ -278,7 +332,7 @@ const UserPage = ({
               <div className="stats stats-vertical h-full w-full bg-slate-700 text-offWhite lg:rounded-3xl">
                 <div className="stat flex flex-col items-center justify-between border-b border-b-slate-600 lg:py-2">
                   <div className="stat-title">Account balance</div>
-                  <div className="stat-value">$400</div>
+                  <div className="stat-value">${balance}</div>
                 </div>
                 <div className="stat my-auto lg:py-2">
                   <div className="btn-group  w-full">
@@ -304,7 +358,7 @@ const UserPage = ({
               <div className="stats stats-vertical h-full w-full bg-accentBlue tracking-normal text-offWhite shadow lg:rounded-3xl">
                 <div className="stat flex flex-col items-center justify-center">
                   <div className="stat-title lg:text-xl">Total rides</div>
-                  <div className="stat-value lg:text-5xl">17</div>
+                  <div className="stat-value lg:text-5xl">{rides}</div>
                   <div className="stat-desc lg:text-sm">
                     accomplished reservations
                   </div>
@@ -312,18 +366,18 @@ const UserPage = ({
 
                 <div className="stat flex flex-col items-center justify-center">
                   <div className="stat-title lg:text-xl">Activity</div>
-                  <div className="stat-value lg:text-5xl">11</div>
+                  <div className="stat-value lg:text-5xl">{reviews}</div>
                   <div className="stat-desc lg:text-sm">bike reviews</div>
                 </div>
 
                 <div className="stat flex flex-col items-center justify-center">
                   <div className="stat-title lg:text-xl">Experience</div>
                   <div className="stat-value lg:text-5xl">
-                    {differenceInDays(new Date(), creationDate)}+ days
+                    {differenceInDays(new Date(), createdAt)}+ days
                   </div>
                   <div className="stat-desc lg:mt-1 lg:text-sm">
                     member since{' '}
-                    <span>{creationDate.toLocaleDateString('sr-RS')}</span>
+                    <span>{createdAt.toLocaleDateString('sr-RS')}</span>
                   </div>
                 </div>
               </div>
@@ -346,7 +400,18 @@ const UserPage = ({
   );
 };
 
-export default UserPage;
+type UserData = {
+  uid: string;
+  displayName: string;
+  photoURL: string;
+  aboutMe: string;
+  birthday: number;
+  createdAt: number;
+  balance: number;
+  city: string;
+  reviews: number;
+  rides: number;
+};
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
@@ -356,23 +421,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const docRef = doc(db, 'users', uid);
     const docSnap = await getDoc(docRef);
-    const test: UserPageProps = {
-      data: docSnap,
-      sthElse: 'test',
-    };
-
-    // const birthday: Timestamp = docSnap.get('birthday');
-    // const date: Date = birthday.toDate();
+    const data = docSnap.data();
 
     return {
       props: {
-        test,
-        // aboutMe: docSnap.get('aboutMe'),
-        // birthday: JSON.parse(JSON.stringify(docSnap.get('birthday'))),
-        // // birthday: birthday.seconds,
-        // allData: JSON.parse(JSON.stringify(docSnap.data())),
-
-        // error: !docSnap.exists(),
+        userDetails: {
+          ...data,
+          birthday: data?.birthday ? data?.birthday.toMillis() : null,
+          createdAt: data?.createdAt ? data?.createdAt.toMillis() : null,
+        },
       },
     };
   } catch (err) {
@@ -381,3 +438,5 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return { props: [] };
   }
 };
+
+export default UserPage;
