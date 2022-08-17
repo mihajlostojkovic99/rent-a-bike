@@ -1,5 +1,4 @@
 import admin from 'firebase-admin';
-// const serviceAccount = require('../secret.json');
 const serviceAccount = JSON.parse(
   process.env.GOOGLE_APPLICATION_CREDENTIALS as string,
 );
