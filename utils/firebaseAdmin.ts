@@ -1,6 +1,6 @@
 import admin from 'firebase-admin';
 const serviceAccount = JSON.parse(
-  process.env.GOOGLE_APPLICATION_CREDENTIALS as string,
+  process.env.FIREBASE_SERVICE_ACCOUNT as string,
 );
 
 export const verifyIdToken = (token: string) => {
