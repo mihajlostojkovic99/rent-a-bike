@@ -22,6 +22,8 @@ import { differenceInDays, differenceInYears } from 'date-fns';
 import { verifyIdToken } from '../utils/firebaseAdmin';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
+import PasswordPopup from '../components/passwordPopup';
+import DeletePopup from '../components/deletePopup';
 
 type FormData = {
   firstName: string;
@@ -76,11 +78,14 @@ const UserPage = ({ userDetails }: UserPageProps) => {
   const newPicture = watch('profilePicture');
   const [editMode, setEditMode] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const userRef = doc(db, 'users', uid);
 
   const onSubmit = async (data: FormData) => {
+    if (!user) return;
+
     setLoading(true);
     const newName = `${data.firstName} ${data.lastName}`;
-    const userRef = doc(db, 'users', uid);
+    var newPhotoURL: string | null = null;
 
     if (data.profilePicture && data.profilePicture.length > 0) {
       const photoRef = ref(
@@ -88,52 +93,24 @@ const UserPage = ({ userDetails }: UserPageProps) => {
         `${uid}.${data.profilePicture[0].type === 'image/png' ? 'png' : 'jpg'}`,
       );
       const uploadTask = await uploadBytes(photoRef, data.profilePicture[0]);
-      await getDownloadURL(uploadTask.ref)
-        .then(async (url) => {
-          await updateDoc(userRef, {
-            photoURL: url,
-            displayName: newName,
-            aboutMe: data.aboutMe,
-            birthday: Timestamp.fromDate(data.birthday),
-            city: data.city,
-          });
-          if (user) {
-            await updateProfile(user, {
-              displayName: newName,
-              photoURL: url,
-            });
-          }
-        })
-        .finally(() => {
-          setLoading(true);
-          setEditMode(false);
-        });
-    } else {
-      if (user) {
-        await updateProfile(user, {
-          displayName: newName,
-        });
-        await updateDoc(userRef, {
-          displayName: newName,
-          aboutMe: data.aboutMe,
-          birthday: Timestamp.fromDate(data.birthday),
-          city: data.city,
-        });
-        setLoading(true);
-        setEditMode(false);
-      } else {
-        await updateDoc(userRef, {
-          displayName: newName,
-          aboutMe: data.aboutMe,
-          birthday: Timestamp.fromDate(data.birthday),
-          city: data.city,
-        });
-        setLoading(true);
-        setEditMode(false);
-      }
+      newPhotoURL = await getDownloadURL(uploadTask.ref);
     }
 
-    // setEditMode(false);
+    await updateDoc(userRef, {
+      photoURL: newPhotoURL,
+      displayName: newName,
+      aboutMe: data.aboutMe,
+      birthday: Timestamp.fromDate(data.birthday),
+      city: data.city,
+    });
+
+    await updateProfile(user, {
+      displayName: newName,
+      photoURL: newPhotoURL,
+    });
+
+    setLoading(false);
+    setEditMode(false);
   };
 
   // console.log(user);
@@ -336,15 +313,40 @@ const UserPage = ({ userDetails }: UserPageProps) => {
                 </div>
                 <div className="stat my-auto lg:py-2">
                   <div className="btn-group  w-full">
-                    <button className="btn btn-accent w-1/2 lg:rounded-2xl ">
+                    <button
+                      className={cx('btn btn-accent w-1/2 lg:rounded-2xl', {
+                        loading: loading,
+                      })}
+                      onClick={async () => {
+                        setLoading(true);
+                        await updateDoc(userRef, {
+                          balance: balance + 50,
+                        });
+                        setLoading(false);
+                      }}
+                    >
                       Add funds
                     </button>
                     <button
                       data-theme="dangertheme"
-                      className="btn btn-accent w-1/2 text-offWhite/90 lg:rounded-2xl"
+                      className={cx('btn btn-accent w-1/2 lg:rounded-2xl', {
+                        loading: loading,
+                      })}
+                      onClick={async () => {
+                        setLoading(true);
+                        if (balance > 50) {
+                          await updateDoc(userRef, {
+                            balance: balance - 50,
+                          });
+                        }
+                        setLoading(false);
+                      }}
                     >
                       Remove funds
                     </button>
+                  </div>
+                  <div className="stat-desc mt-1 text-center lg:text-sm">
+                    add/remove $50
                   </div>
                 </div>
               </div>
@@ -386,12 +388,20 @@ const UserPage = ({ userDetails }: UserPageProps) => {
               data-theme="dangertheme"
               className="mt-3 flex w-full flex-col  justify-evenly rounded-md bg-red-600/20 p-3 lg:col-start-3 lg:row-start-3 lg:row-end-4 lg:mt-0 lg:rounded-3xl lg:p-6"
             >
-              <button className="btn btn-accent w-full text-xl font-bold normal-case text-offWhite lg:h-16 lg:rounded-2xl">
+              <label
+                htmlFor="password"
+                className="btn btn-accent w-full text-xl font-bold normal-case text-offWhite lg:h-16 lg:rounded-2xl"
+              >
                 Change password
-              </button>
-              <button className="btn btn-accent mt-3 w-full text-xl font-bold normal-case text-offWhite lg:h-16 lg:rounded-2xl">
+              </label>
+              <label
+                htmlFor="delete"
+                className="btn btn-accent mt-3 w-full text-xl font-bold normal-case text-offWhite lg:h-16 lg:rounded-2xl"
+              >
                 Delete account
-              </button>
+              </label>
+              <PasswordPopup></PasswordPopup>
+              <DeletePopup></DeletePopup>
             </div>
           </div>
         </div>

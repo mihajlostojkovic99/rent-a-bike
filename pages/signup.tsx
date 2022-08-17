@@ -6,8 +6,10 @@ import { updateProfile } from 'firebase/auth';
 import { Router, useRouter } from 'next/router';
 import { useAuth } from '../utils/useAuth';
 import { useForm } from 'react-hook-form';
-import { profilePictures } from '../utils/firebase';
+import { db, profilePictures } from '../utils/firebase';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { doc, setDoc, Timestamp } from 'firebase/firestore';
+import cx from 'classnames';
 import Avatar from '../components/avatar';
 
 type FormData = {
@@ -32,61 +34,93 @@ const SignupPage: NextPage = () => {
   } = useForm<FormData>();
 
   const image = watch('profilePicture');
-  const [imgURL, setImgURL] = useState<string | null | ArrayBuffer>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     // console.log(data);
+    setLoading(true);
 
-    signUp(data.email, data.password)
-      .then((userCredential) => {
-        const user = userCredential!.user;
+    const createdAt: Date = new Date();
+    createdAt.setHours(0, 0, 0, 0);
+    console.log(createdAt);
 
-        // Da li moze nekako lepse da se zapise????????
-        //Loading spinner kako??????
-        updateProfile(user, {
-          displayName: `${data.firstName} ${data.lastName}`,
-        }).then(() => {
-          if (data.profilePicture[0]) {
-            const photoRef = ref(
-              profilePictures,
-              `${user.uid}.${
-                data.profilePicture[0].type === 'image/png' ? 'png' : 'jpg'
-              }`,
-            );
-            const uploadTask = uploadBytes(photoRef, data.profilePicture[0]);
-            uploadTask.then((res) => {
-              getDownloadURL(res.ref).then((url) => {
-                console.log(url);
-                updateProfile(user, {
-                  photoURL: url,
-                }).then(() => {
-                  router.push('/');
-                });
-              });
-            });
-          } else router.push('/');
-        });
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log('errorCode: ', errorCode, ' errorMessage: ', errorMessage);
-      });
-  };
-
-  const getImgURL = (img: File[]) => {
-    const fileReader = new FileReader();
-    fileReader.addEventListener('load', () => {
-      setImgURL(fileReader.result);
-    });
-    if (img[0]) {
-      fileReader.readAsDataURL(img[0]);
+    const credentials = await signUp(data.email, data.password);
+    if (!credentials) {
+      setLoading(false);
+      return;
     }
+    const user = credentials.user;
+
+    var photoURL: string | null = null;
+
+    if (data.profilePicture && data.profilePicture.length > 0) {
+      const photoRef = ref(
+        profilePictures,
+        `${user.uid}.${
+          data.profilePicture[0].type === 'image/png' ? 'png' : 'jpg'
+        }`,
+      );
+      const uploadTask = await uploadBytes(photoRef, data.profilePicture[0]);
+      photoURL = await getDownloadURL(uploadTask.ref);
+    }
+
+    await updateProfile(user, {
+      displayName: `${data.firstName} ${data.lastName}`,
+      photoURL: photoURL,
+    });
+
+    await setDoc(doc(db, 'users', user.uid), {
+      uid: user.uid,
+      displayName: `${data.firstName} ${data.lastName}`,
+      photoURL: photoURL,
+      createdAt: Timestamp.fromDate(createdAt),
+      balance: 0,
+      reviews: 0,
+      rides: 0,
+    });
+
+    setLoading(false);
+    router.push('home');
+
+    // signUp(data.email, data.password)
+    //   .then((userCredential) => {
+    //     const user = userCredential!.user;
+
+    //     // Da li moze nekako lepse da se zapise????????
+    //     //Loading spinner kako??????
+    //     updateProfile(user, {
+    //       displayName: `${data.firstName} ${data.lastName}`,
+    //     }).then(() => {
+    //       if (data.profilePicture[0]) {
+    //         const photoRef = ref(
+    //           profilePictures,
+    //           `${user.uid}.${
+    //             data.profilePicture[0].type === 'image/png' ? 'png' : 'jpg'
+    //           }`,
+    //         );
+    //         const uploadTask = uploadBytes(photoRef, data.profilePicture[0]);
+    //         uploadTask.then((res) => {
+    //           getDownloadURL(res.ref).then((url) => {
+    //             console.log(url);
+    //             updateProfile(user, {
+    //               photoURL: url,
+    //             }).then(() => {
+    //               router.push('/');
+    //             });
+    //           });
+    //         });
+    //       } else router.push('/');
+    //     });
+    //   })
+    //   .catch((error) => {
+    //     const errorCode = error.code;
+    //     const errorMessage = error.message;
+    //     console.log('errorCode: ', errorCode, ' errorMessage: ', errorMessage);
+    //   });
   };
 
   return (
     <>
-      {image && getImgURL(image)}
       <Layout>
         <div className="mt-2 w-full lg:mt-5">
           <div className="mx-auto flex flex-col items-center text-center text-2xl font-extrabold tracking-tight text-white lg:text-4xl">
@@ -221,16 +255,19 @@ const SignupPage: NextPage = () => {
             </label>
           </div>
 
-          {/* <div className="mt-4 flex h-32 w-32 items-center justify-center bg-accentBlue text-center font-bold lg:h-48 lg:w-48">
-          Ovde ide prikaz profilne
-        </div> */}
-          {/* {image && ( */}
-          <Avatar className=" mt-3" classNameSize="w-36" imageSrc={imgURL} />
-          {/* )} */}
+          <Avatar
+            className=" mt-3"
+            classNameSize="w-36"
+            imageSrc={
+              image && image.length > 0 ? URL.createObjectURL(image[0]) : null
+            }
+          />
 
           <button
             type="submit"
-            className="btn btn-accent my-4 h-16 text-xl normal-case"
+            className={cx('btn btn-accent my-4 h-16 text-xl normal-case', {
+              loading: loading,
+            })}
           >
             Create an account
           </button>
