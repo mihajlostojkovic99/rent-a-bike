@@ -3,16 +3,16 @@ import { ReactElement, ReactNode } from 'react';
 import { useAuth } from './useAuth';
 
 type AuthCheckProps = {
-  children: JSX.Element;
+  children: JSX.Element | JSX.Element[];
   fallback?: JSX.Element;
 };
 
-const AuthCheck = ({ children, fallback }: AuthCheckProps) => {
-  const { userData } = useAuth();
+export function AuthCheck({ children, fallback }: AuthCheckProps) {
+  const { user } = useAuth();
 
-  return userData
-    ? children
-    : fallback || <Link href="/">You must be logged in.</Link>;
-};
-
-export default AuthCheck;
+  return user ? (
+    <>{children}</>
+  ) : (
+    fallback || <Link href="/">You must be logged in.</Link>
+  );
+}

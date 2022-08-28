@@ -18,9 +18,7 @@ const Navbar = ({ className }: NavbarProps) => {
             GoBike
           </a>
         </Link>
-        <div>
-          <NavMenu />
-        </div>
+        <div>{user !== undefined && <NavMenu />}</div>
       </div>
     </div>
   );

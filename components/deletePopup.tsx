@@ -1,9 +1,10 @@
 import { GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
+import { deleteDoc, doc } from 'firebase/firestore';
 import Link from 'next/link';
 import Router from 'next/router';
 import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { auth } from '../utils/firebase';
+import { auth, db } from '../utils/firebase';
 import { useAuth } from '../utils/useAuth';
 
 type DeletePopupProps = {
@@ -11,7 +12,7 @@ type DeletePopupProps = {
 };
 
 const DeletePopup = ({ children }: DeletePopupProps) => {
-  const { deleteAccount } = useAuth();
+  const { user, deleteAccount } = useAuth();
 
   const password = useRef<string>('');
 
@@ -59,8 +60,8 @@ const DeletePopup = ({ children }: DeletePopupProps) => {
             )}
             <button
               className="btn btn-accent my-4 h-16 w-full text-xl"
-              onClick={() => {
-                deleteAccount(password.current).catch((error) =>
+              onClick={async () => {
+                await deleteAccount(password.current).catch((error) =>
                   setFirebaseError(error.code),
                 );
               }}

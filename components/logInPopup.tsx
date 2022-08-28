@@ -1,6 +1,6 @@
 import { GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
 import Link from 'next/link';
-import Router from 'next/router';
+import Router, { useRouter } from 'next/router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { auth } from '../utils/firebase';
@@ -16,7 +16,8 @@ type LogInPopupProps = {
 };
 
 const LogInPopup = ({ children }: LogInPopupProps) => {
-  const { login } = useAuth();
+  const { login, loginGoogle } = useAuth();
+  const router = useRouter();
 
   const {
     register,
@@ -26,23 +27,20 @@ const LogInPopup = ({ children }: LogInPopupProps) => {
 
   const [firebaseError, setFirebaseError] = useState<string | null>();
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     console.log(data);
-    login(data.email, data.password)
+    await login(data.email, data.password)
       .then(() => {
-        Router.push('home');
+        router.push('home');
+        console.log('router pushing home page');
       })
       .catch((error) => {
         const errorCode: string = error.code;
         console.log(errorCode);
         setFirebaseError(errorCode); //auth/user-not-found || auth/wrong-password
       });
-  };
-
-  const signInGoogle = () => {
-    signInWithRedirect(auth, new GoogleAuthProvider()).then(() => {
-      Router.push('home');
-    });
+    router.push('home');
+    console.log('router pushing home page');
   };
 
   return (
@@ -127,7 +125,7 @@ const LogInPopup = ({ children }: LogInPopupProps) => {
             </form>
             <button
               className="btn btn-outline normal-case"
-              onClick={signInGoogle}
+              onClick={loginGoogle}
             >
               Sign in with Google
             </button>

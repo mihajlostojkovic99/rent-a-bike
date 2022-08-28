@@ -1,13 +1,20 @@
 import { TextField, ThemeProvider } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import Avatar from '../components/avatar';
 import Layout from '../components/layout';
 import { muiTheme2 } from '../utils/datePicker';
 import { db, profilePictures, userToJSON } from '../utils/firebase';
 import { useAuth } from '../utils/useAuth';
-import { doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import {
+  doc,
+  DocumentData,
+  DocumentReference,
+  getDoc,
+  Timestamp,
+  updateDoc,
+} from 'firebase/firestore';
 import cx from 'classnames';
 import { differenceInDays, differenceInYears } from 'date-fns';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
@@ -17,6 +24,7 @@ import DeletePopup from '../components/deletePopup';
 import { GetServerSideProps } from 'next';
 import nookies from 'nookies';
 import { verifyIdToken } from '../utils/firebaseAdmin';
+import { useDocumentData } from 'react-firebase-hooks/firestore';
 
 type FormData = {
   firstName: string;
@@ -28,7 +36,7 @@ type FormData = {
 };
 
 type UserPageProps = {
-  serverUserData: UserData;
+  serverUserData: DocumentData;
   userPath: string;
 };
 
@@ -46,7 +54,18 @@ type UserData = {
 };
 
 const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
-  const { user, userData: realtimeUserData } = useAuth();
+  const { user } = useAuth();
+
+  const userRef = useRef<DocumentReference<DocumentData> | null>(null);
+  const [realtimeUserData] = useDocumentData(userRef.current);
+
+  console.log('RE-RENDERED USER PAGE');
+
+  useEffect(() => {
+    if (user) {
+      userRef.current = doc(db, 'users', user.uid);
+    }
+  }, [user]);
 
   const userData = realtimeUserData || serverUserData;
 
@@ -356,10 +375,14 @@ const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
                       })}
                       onClick={async () => {
                         setLoading(true);
-                        if (balance > 50) {
-                          const userRef = doc(db, userPath);
+                        const userRef = doc(db, userPath);
+                        if (balance >= 50) {
                           await updateDoc(userRef, {
                             balance: balance - 50,
+                          });
+                        } else {
+                          await updateDoc(userRef, {
+                            balance: 0,
                           });
                         }
                         setLoading(false);

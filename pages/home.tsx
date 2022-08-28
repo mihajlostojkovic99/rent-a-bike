@@ -5,14 +5,15 @@ import Layout from '../components/layout';
 import Searchbox from '../components/searchbox';
 import bike from '../public/home_bike.jpg';
 import { useAuth } from '../utils/useAuth';
-import AuthCheck from '../utils/authCheck';
+import { AuthCheck } from '../utils/authCheck';
 
 const Home: NextPage = () => {
   const { user } = useAuth();
+  console.log('HOME PAGE RENDERED AND USER IS: ', user);
 
   return (
-    <AuthCheck>
-      <Layout>
+    <Layout>
+      <AuthCheck>
         <div className="absolute -z-10 mt-10 h-[650px] w-full lg:-right-40 lg:mt-0 lg:h-[450px] lg:w-[750px] lg:overflow-hidden lg:rounded-3xl lg:border-4">
           <Image
             src={bike}
@@ -48,8 +49,8 @@ const Home: NextPage = () => {
           </div>
           <Searchbox className="mx-1 mt-5 lg:mx-auto "></Searchbox>
         </div>
-      </Layout>
-    </AuthCheck>
+      </AuthCheck>
+    </Layout>
   );
 };
 

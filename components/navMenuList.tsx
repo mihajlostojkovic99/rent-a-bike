@@ -13,7 +13,7 @@ const NavMenuList = () => {
         </Link>
       </li>
       <li>
-        <Link href="user" prefetch>
+        <Link href="user">
           <a>My profile</a>
         </Link>
       </li>
