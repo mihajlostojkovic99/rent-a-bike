@@ -12,4 +12,4 @@ export const Button = ({ className, children }: ButtonProps) => {
   );
 };
 
-// export default Button;
+export default Button;
