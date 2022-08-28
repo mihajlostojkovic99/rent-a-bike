@@ -3,7 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
 import { getPerformance } from 'firebase/performance';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { DocumentData, getFirestore } from 'firebase/firestore';
 import { getStorage, ref } from 'firebase/storage';
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -29,3 +29,11 @@ export const auth = getAuth(firebase);
 export const db = getFirestore(firebase);
 export const storage = getStorage(firebase);
 export const profilePictures = ref(storage, 'profilePictures');
+
+export function userToJSON(user: DocumentData | undefined): DocumentData {
+  return {
+    ...user,
+    birthday: user?.birthday ? user?.birthday.toMillis() : null,
+    createdAt: user?.createdAt.toMillis(),
+  };
+}

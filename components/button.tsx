@@ -4,7 +4,7 @@ type ButtonProps = {
   className?: string;
   children: React.ReactNode;
 };
-const Button = ({ className, children }: ButtonProps) => {
+export const Button = ({ className, children }: ButtonProps) => {
   return (
     <button className={cx('rounded-lg bg-accentBlue p-2.5', className)}>
       {children}
@@ -12,4 +12,4 @@ const Button = ({ className, children }: ButtonProps) => {
   );
 };
 
-export default Button;
+// export default Button;

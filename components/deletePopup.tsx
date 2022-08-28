@@ -37,7 +37,9 @@ const DeletePopup = ({ children }: DeletePopupProps) => {
           <div className="form-control w-full">
             <div className="text-center text-3xl font-bold">Are you sure?</div>
             <label className="label">
-              <span className="label-text text-accentBlue">Password:</span>
+              <span className="label-text text-accentBlue">
+                Confirm by entering your password:
+              </span>
             </label>
             <input
               type="password"

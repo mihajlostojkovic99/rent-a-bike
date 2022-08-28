@@ -1,22 +1,31 @@
 import { TextField, ThemeProvider } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { useState } from 'react';
+import { GetServerSideProps } from 'next';
+import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import Avatar from '../components/avatar';
-import Layout from '../components/layout';
-import { muiTheme2 } from '../utils/datePicker';
-import { db, profilePictures, userToJSON } from '../utils/firebase';
-import { useAuth } from '../utils/useAuth';
-import { doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import Avatar from '../../components/avatar';
+import Layout from '../../components/layout';
+import { muiTheme2 } from '../../utils/datePicker';
+import { db, profilePictures, userToJSON } from '../../utils/firebase';
+import { useAuth } from '../../utils/useAuth';
+import {
+  doc,
+  DocumentData,
+  DocumentReference,
+  DocumentSnapshot,
+  getDoc,
+  Timestamp,
+  updateDoc,
+} from 'firebase/firestore';
+import nookies from 'nookies';
 import cx from 'classnames';
 import { differenceInDays, differenceInYears } from 'date-fns';
+import { verifyIdToken } from '../../utils/firebaseAdmin';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
-import PasswordPopup from '../components/passwordPopup';
-import DeletePopup from '../components/deletePopup';
-import { GetServerSideProps } from 'next';
-import nookies from 'nookies';
-import { verifyIdToken } from '../utils/firebaseAdmin';
+import { useDocumentData } from 'react-firebase-hooks/firestore';
+import PasswordPopup from '../../components/passwordPopup';
+import DeletePopup from '../../components/deletePopup';
 
 type FormData = {
   firstName: string;
@@ -28,27 +37,17 @@ type FormData = {
 };
 
 type UserPageProps = {
-  serverUserData: UserData;
+  userDetails: DocumentData;
   userPath: string;
 };
 
-type UserData = {
-  uid: string;
-  displayName: string;
-  photoURL: string;
-  aboutMe: string;
-  birthday: number;
-  createdAt: number;
-  balance: number;
-  city: string;
-  reviews: number;
-  rides: number;
-};
+const UserPage = ({ userDetails, userPath }: UserPageProps) => {
+  const { user } = useAuth();
 
-const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
-  const { user, userData: realtimeUserData } = useAuth();
+  const userRef = doc(db, userPath);
+  const [realtimeUserDetails] = useDocumentData(userRef);
 
-  const userData = realtimeUserData || serverUserData;
+  const userData = realtimeUserDetails || userDetails;
 
   const {
     uid,
@@ -75,7 +74,8 @@ const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
     city: userData.city || 'Unknown',
     aboutMe: userData.aboutMe || '',
   };
-  // console.log(userDetails);
+
+  //   console.log(sameUser);
   const {
     register,
     handleSubmit,
@@ -93,6 +93,7 @@ const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
     },
   });
   const newPicture = watch('profilePicture');
+  const sameUser = user?.uid === uid;
   const [editMode, setEditMode] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -106,16 +107,11 @@ const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
     if (data.profilePicture && data.profilePicture.length > 0) {
       const photoRef = ref(
         profilePictures,
-        `${uid}.${
-          // data.profilePicture[0].type === 'image/png' ? 'png' : 'jpg'
-          data.profilePicture[0].type.split('/')[1]
-        }`,
+        `${uid}.${data.profilePicture[0].type === 'image/png' ? 'png' : 'jpg'}`,
       );
       const uploadTask = await uploadBytes(photoRef, data.profilePicture[0]);
       newPhotoURL = await getDownloadURL(uploadTask.ref);
     }
-
-    const userRef = doc(db, userPath);
 
     await updateDoc(userRef, {
       photoURL: newPhotoURL,
@@ -317,12 +313,14 @@ const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => setEditMode(true)}
-                    className="btn btn-accent mt-3 w-full text-lg normal-case lg:rounded-2xl"
-                  >
-                    Edit profile
-                  </button>
+                  sameUser && (
+                    <button
+                      onClick={() => setEditMode(true)}
+                      className="btn btn-accent mt-3 w-full text-lg normal-case lg:rounded-2xl"
+                    >
+                      Edit profile
+                    </button>
+                  )
                 )}
               </div>
             </form>
@@ -332,46 +330,46 @@ const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
                   <div className="stat-title">Account balance</div>
                   <div className="stat-value">${balance}</div>
                 </div>
-                <div className="stat my-auto lg:py-2">
-                  <div className="btn-group  w-full">
-                    <button
-                      className={cx('btn btn-accent w-1/2 lg:rounded-2xl', {
-                        loading: loading,
-                      })}
-                      onClick={async () => {
-                        setLoading(true);
-                        const userRef = doc(db, userPath);
-                        await updateDoc(userRef, {
-                          balance: balance + 50,
-                        });
-                        setLoading(false);
-                      }}
-                    >
-                      Add funds
-                    </button>
-                    <button
-                      data-theme="dangertheme"
-                      className={cx('btn btn-accent w-1/2 lg:rounded-2xl', {
-                        loading: loading,
-                      })}
-                      onClick={async () => {
-                        setLoading(true);
-                        if (balance > 50) {
-                          const userRef = doc(db, userPath);
+                {sameUser && (
+                  <div className="stat my-auto lg:py-2">
+                    <div className="btn-group w-full">
+                      <button
+                        className={cx('btn btn-accent w-1/2 lg:rounded-2xl', {
+                          loading: loading,
+                        })}
+                        onClick={async () => {
+                          setLoading(true);
                           await updateDoc(userRef, {
-                            balance: balance - 50,
+                            balance: balance + 50,
                           });
-                        }
-                        setLoading(false);
-                      }}
-                    >
-                      Remove funds
-                    </button>
+                          setLoading(false);
+                        }}
+                      >
+                        Add funds
+                      </button>
+                      <button
+                        data-theme="dangertheme"
+                        className={cx('btn btn-accent w-1/2 lg:rounded-2xl', {
+                          loading: loading,
+                        })}
+                        onClick={async () => {
+                          setLoading(true);
+                          if (balance > 50) {
+                            await updateDoc(userRef, {
+                              balance: balance - 50,
+                            });
+                          }
+                          setLoading(false);
+                        }}
+                      >
+                        Remove funds
+                      </button>
+                    </div>
+                    <div className="stat-desc mt-1 text-center lg:text-sm">
+                      add/remove $50
+                    </div>
                   </div>
-                  <div className="stat-desc mt-1 text-center lg:text-sm">
-                    add/remove $50
-                  </div>
-                </div>
+                )}
               </div>
             </div>
             <div className="mt-3 w-full rounded-md bg-accentBlue/10 p-3 lg:col-start-2 lg:col-end-3 lg:row-start-2 lg:row-end-4 lg:mt-0 lg:rounded-3xl">
@@ -407,25 +405,27 @@ const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
                 </div>
               </div>
             </div>
-            <div
-              data-theme="dangertheme"
-              className="mt-3 flex w-full flex-col  justify-evenly rounded-md bg-red-600/20 p-3 lg:col-start-3 lg:row-start-3 lg:row-end-4 lg:mt-0 lg:rounded-3xl lg:p-6"
-            >
-              <label
-                htmlFor="password"
-                className="btn btn-accent w-full text-xl font-bold normal-case text-offWhite lg:h-16 lg:rounded-2xl"
+            {sameUser && (
+              <div
+                data-theme="dangertheme"
+                className="mt-3 flex w-full flex-col  justify-evenly rounded-md bg-red-600/20 p-3 lg:col-start-3 lg:row-start-3 lg:row-end-4 lg:mt-0 lg:rounded-3xl lg:p-6"
               >
-                Change password
-              </label>
-              <label
-                htmlFor="delete"
-                className="btn btn-accent mt-3 w-full text-xl font-bold normal-case text-offWhite lg:h-16 lg:rounded-2xl"
-              >
-                Delete account
-              </label>
-              <PasswordPopup></PasswordPopup>
-              <DeletePopup></DeletePopup>
-            </div>
+                <label
+                  htmlFor="password"
+                  className="btn btn-accent w-full text-xl font-bold normal-case text-offWhite lg:h-16 lg:rounded-2xl"
+                >
+                  Change password
+                </label>
+                <label
+                  htmlFor="delete"
+                  className="btn btn-accent mt-3 w-full text-xl font-bold normal-case text-offWhite lg:h-16 lg:rounded-2xl"
+                >
+                  Delete account
+                </label>
+                <PasswordPopup></PasswordPopup>
+                <DeletePopup></DeletePopup>
+              </div>
+            )}
           </div>
         </div>
       </Layout>
@@ -433,25 +433,39 @@ const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  try {
-    const cookies = nookies.get(context);
-    const token = await verifyIdToken(cookies.token);
-    const { uid } = token;
+type UserData = {
+  uid: string;
+  displayName: string;
+  photoURL: string;
+  aboutMe: string;
+  birthday: number;
+  createdAt: number;
+  balance: number;
+  city: string;
+  reviews: number;
+  rides: number;
+};
 
-    const docRef = doc(db, 'users', uid);
+export const getServerSideProps: GetServerSideProps = async ({
+  params,
+  res,
+}) => {
+  try {
+    const uid = params?.uid;
+
+    const docRef = doc(db, 'users', uid as string);
     const docSnap = await getDoc(docRef);
     const data = docSnap.data();
 
     return {
       props: {
-        serverUserData: userToJSON(data),
+        userDetails: userToJSON(data),
         userPath: docRef.path,
       },
     };
   } catch (err) {
-    context.res.writeHead(302, { location: '/' });
-    context.res.end();
+    res.writeHead(302, { location: '/' });
+    res.end();
     return { props: [] };
   }
 };

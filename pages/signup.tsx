@@ -57,7 +57,8 @@ const SignupPage: NextPage = () => {
       const photoRef = ref(
         profilePictures,
         `${user.uid}.${
-          data.profilePicture[0].type === 'image/png' ? 'png' : 'jpg'
+          // data.profilePicture[0].type === 'image/png' ? 'png' : 'jpg'
+          data.profilePicture[0].type.split('/')[1]
         }`,
       );
       const uploadTask = await uploadBytes(photoRef, data.profilePicture[0]);
