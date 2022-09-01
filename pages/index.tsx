@@ -1,4 +1,4 @@
-import type { NextPage } from 'next';
+import type { GetServerSideProps, NextPage } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import Layout from '../components/layout';
@@ -6,15 +6,21 @@ import Searchbox from '../components/searchbox';
 import bike from '../public/bg_bike.jpg';
 import { useAuth } from '../utils/useAuth';
 import Router from 'next/router';
+import nookies from 'nookies';
+import { verifyIdToken } from '../utils/firebaseAdmin';
+import { doc, DocumentData, getDoc } from 'firebase/firestore';
+import { db, userToJSON } from '../utils/firebase';
 
-const Index: NextPage = () => {
+type IndexProps = {
+  userData?: DocumentData;
+};
+
+const Index: NextPage<IndexProps> = ({ userData }: IndexProps) => {
   const { user } = useAuth();
   console.log('INDEX PAGE RENDERED AND USER IS: ', user);
   if (user) {
-    // console.log('rerouting...');
     Router.push('home');
   }
-  // console.log('Index page not rerouted');
   return (
     <>
       <Layout>
@@ -43,7 +49,7 @@ const Index: NextPage = () => {
                 Join now
               </Button> */}
                 <Link href="/signup" passHref>
-                  <button className="btn btn-accent mt-12 h-16 w-48 text-3xl normal-case outline outline-2 outline-white/40 lg:mt-20 lg:h-24 lg:w-72 lg:text-5xl">
+                  <button className="btn btn-accent outline mt-12 h-16 w-48 text-3xl normal-case outline-2 outline-white/40 lg:mt-20 lg:h-24 lg:w-72 lg:text-5xl">
                     Join now
                   </button>
                 </Link>

@@ -1,9 +1,10 @@
 import { GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import Router, { useRouter } from 'next/router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { auth } from '../utils/firebase';
+import { auth, db } from '../utils/firebase';
 import { useAuth } from '../utils/useAuth';
 
 type FormData = {
@@ -28,19 +29,21 @@ const LogInPopup = ({ children }: LogInPopupProps) => {
   const [firebaseError, setFirebaseError] = useState<string | null>();
 
   const onSubmit = async (data: FormData) => {
-    console.log(data);
-    await login(data.email, data.password)
-      .then(() => {
-        router.push('home');
-        console.log('router pushing home page');
-      })
-      .catch((error) => {
-        const errorCode: string = error.code;
-        console.log(errorCode);
-        setFirebaseError(errorCode); //auth/user-not-found || auth/wrong-password
-      });
-    router.push('home');
-    console.log('router pushing home page');
+    try {
+      const tmp = await login(data.email, data.password);
+      if (tmp) {
+        const userSnap = await getDoc(doc(db, 'users', tmp.user.uid));
+        if (userSnap.data()?.isAdmin) {
+          router.push('admin');
+        } else {
+          router.push('home');
+        }
+      }
+    } catch (error: any) {
+      const errorCode: string = error.code;
+      console.log(errorCode);
+      setFirebaseError(errorCode); //auth/user-not-found || auth/wrong-password
+    }
   };
 
   return (

@@ -432,7 +432,7 @@ const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
             </div>
             <div
               data-theme="dangertheme"
-              className="mt-3 flex w-full flex-col  justify-evenly rounded-md bg-red-600/20 p-3 lg:col-start-3 lg:row-start-3 lg:row-end-4 lg:mt-0 lg:rounded-3xl lg:p-6"
+              className="mt-3 flex w-full flex-col justify-evenly rounded-md bg-red-600/20 p-3 lg:col-start-3 lg:row-start-3 lg:row-end-4 lg:mt-0 lg:rounded-3xl lg:p-6"
             >
               <label
                 htmlFor="password"
