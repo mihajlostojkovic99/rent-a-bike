@@ -20,10 +20,11 @@ import { auth, db, firebase } from './firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import Router, { useRouter } from 'next/router';
 import { deleteDoc, doc, DocumentData, onSnapshot } from 'firebase/firestore';
+import { UserData } from './dbTypes';
 
 type Auth = {
   user: FirebaseUser | null | undefined;
-  // userData: DocumentData | undefined; TOO MUCH RE-RENDERING CONSIDER useRef
+  userData: UserData | undefined; //TOO MUCH RE-RENDERING CONSIDER useRef
   // userPath: string;
   getUser: () => FirebaseUser | null;
   login: (
@@ -47,7 +48,7 @@ type AuthProviderProps = {
 
 export const AuthContext = createContext<Auth>({
   user: null,
-  // userData: undefined,
+  userData: undefined,
   // userPath: '',
   getUser: () => null,
   login: async () => undefined,
@@ -66,7 +67,7 @@ export function useAuth() {
 export function AuthProvider({ children }: AuthProviderProps) {
   // const [user, setUser] = useState<FirebaseUser | null | undefined>();
   const [user, loading] = useAuthState(auth);
-  // const [userData, setUserData] = useState<DocumentData | undefined>(undefined);
+  const [userData, setUserData] = useState<UserData | undefined>(undefined);
   // const [userPath, setUserPath] = useState<string>('');
   // const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
@@ -129,11 +130,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const token = await user.getIdToken();
         nookies.set(undefined, 'token', token, {});
         unsubscribe = onSnapshot(ref, (doc) => {
-          // setUserData(doc.data());
+          setUserData(doc.data() as UserData);
         });
         // setLoading(false);
       } else {
-        // setUserData(undefined);
+        setUserData(undefined);
         nookies.set(undefined, 'token', '', {});
       }
     }
@@ -144,7 +145,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const value: Auth = {
     user,
-    // userData,
+    userData,
     // userPath,
     getUser,
     login,

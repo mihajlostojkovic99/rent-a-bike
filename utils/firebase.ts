@@ -30,7 +30,7 @@ export const db = getFirestore(firebase);
 export const storage = getStorage(firebase);
 export const profilePictures = ref(storage, 'profilePictures');
 
-export function userToJSON(user: DocumentData | undefined): DocumentData {
+export function userToJSON(user: DocumentData | undefined) {
   return {
     ...user,
     birthday: user?.birthday ? user?.birthday.toMillis() : null,

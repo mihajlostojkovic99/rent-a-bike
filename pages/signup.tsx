@@ -82,42 +82,6 @@ const SignupPage: NextPage = () => {
 
     setLoading(false);
     router.push('home');
-
-    // signUp(data.email, data.password)
-    //   .then((userCredential) => {
-    //     const user = userCredential!.user;
-
-    //     // Da li moze nekako lepse da se zapise????????
-    //     //Loading spinner kako??????
-    //     updateProfile(user, {
-    //       displayName: `${data.firstName} ${data.lastName}`,
-    //     }).then(() => {
-    //       if (data.profilePicture[0]) {
-    //         const photoRef = ref(
-    //           profilePictures,
-    //           `${user.uid}.${
-    //             data.profilePicture[0].type === 'image/png' ? 'png' : 'jpg'
-    //           }`,
-    //         );
-    //         const uploadTask = uploadBytes(photoRef, data.profilePicture[0]);
-    //         uploadTask.then((res) => {
-    //           getDownloadURL(res.ref).then((url) => {
-    //             console.log(url);
-    //             updateProfile(user, {
-    //               photoURL: url,
-    //             }).then(() => {
-    //               router.push('/');
-    //             });
-    //           });
-    //         });
-    //       } else router.push('/');
-    //     });
-    //   })
-    //   .catch((error) => {
-    //     const errorCode = error.code;
-    //     const errorMessage = error.message;
-    //     console.log('errorCode: ', errorCode, ' errorMessage: ', errorMessage);
-    //   });
   };
 
   return (

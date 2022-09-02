@@ -24,7 +24,7 @@ const Avatar = ({
   priority,
   children,
 }: AvatarProps) => {
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   return (
     <label
       htmlFor={htmlFor}
@@ -80,7 +80,7 @@ const Avatar = ({
               classNameText ? classNameText : 'text-2xl',
             )}
           >
-            {user?.displayName?.split(' ').map((str) => str.charAt(0))}
+            {userData?.displayName?.split(' ').map((str) => str.charAt(0))}
           </div>
         )}
       </div>

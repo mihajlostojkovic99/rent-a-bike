@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { ReactElement, ReactNode } from 'react';
 import { useAuth } from './useAuth';
 
@@ -9,6 +10,11 @@ type AuthCheckProps = {
 
 export function AuthCheck({ children, fallback }: AuthCheckProps) {
   const { user } = useAuth();
+  const router = useRouter();
+
+  // if (user === null) {
+  //   router.replace('/');
+  // }
 
   return user ? (
     <>{children}</>

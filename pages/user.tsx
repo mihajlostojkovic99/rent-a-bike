@@ -25,6 +25,7 @@ import { GetServerSideProps } from 'next';
 import nookies from 'nookies';
 import { verifyIdToken } from '../utils/firebaseAdmin';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
+import { UserData } from '../utils/dbTypes';
 
 type FormData = {
   firstName: string;
@@ -38,19 +39,6 @@ type FormData = {
 type UserPageProps = {
   serverUserData: DocumentData;
   userPath: string;
-};
-
-type UserData = {
-  uid: string;
-  displayName: string;
-  photoURL: string;
-  aboutMe: string;
-  birthday: number;
-  createdAt: number;
-  balance: number;
-  city: string;
-  reviews: number;
-  rides: number;
 };
 
 const UserPage = ({ serverUserData, userPath }: UserPageProps) => {

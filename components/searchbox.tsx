@@ -24,7 +24,7 @@ const sortOptions = [
 
 export type SearchSort = 'ascending' | 'descending' | 'popularity';
 
-const selectStyles = {
+export const selectStyles = {
   control: (styles: any, { isDisabled, isFocused, isSelected }: any) => ({
     ...styles,
     'backgroundColor': '#E3E3E3',
@@ -44,6 +44,18 @@ const selectStyles = {
   }),
 };
 
+export const loadBikeTypes = async () => {
+  const typesSnap = await getDocs(collection(db, 'bikes'));
+
+  const types: { value: string; label: string }[] = [];
+
+  typesSnap.forEach((typeSnap) => {
+    types.push({ value: typeSnap.id, label: typeSnap.data().label });
+  });
+
+  return types;
+};
+
 const Searchbox = ({ className, children }: SearchboxProps) => {
   const [sameDayReturn, setSameDayReturn] = useState<boolean>(true);
   const [startTime, setStartTime] = useState<Date | null>(new Date());
@@ -55,18 +67,6 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
 
   const sortSelect = useRef<SearchSort | undefined>('ascending');
   const [sort, setSort] = useState<SearchSort | undefined>();
-
-  const loadBikeTypes = async () => {
-    const typesSnap = await getDocs(collection(db, 'bikes'));
-
-    const types: { value: string; label: string }[] = [];
-
-    typesSnap.forEach((typeSnap) => {
-      types.push({ value: typeSnap.id, label: typeSnap.data().label });
-    });
-
-    return types;
-  };
 
   const loadLocations = async () => {
     const locationsSnap = await getDocs(collection(db, 'locations'));
