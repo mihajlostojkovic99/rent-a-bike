@@ -2,12 +2,16 @@ import { LightningBoltIcon, StarIcon } from '@heroicons/react/solid';
 import Image from 'next/image';
 import cx from 'classnames';
 import { Bike } from '../utils/dbTypes';
+import { useAuth } from '../utils/useAuth';
 
 type BikeCardProps = {
   bike: Bike;
+  onClick: () => void;
 };
 
-const BikeCard = ({ bike }: BikeCardProps) => {
+const BikeCard = ({ bike, onClick }: BikeCardProps) => {
+  const { user } = useAuth();
+
   return (
     <div
       className={cx(
@@ -55,12 +59,25 @@ const BikeCard = ({ bike }: BikeCardProps) => {
             Price: ${bike.pricePerHour}{' '}
             <span className="text-justBlack/40">/ hour</span>
           </div>
-          <button
-            data-theme={bike.isElectric ? 'greentheme' : 'mytheme'}
-            className="btn btn-accent w-full text-2xl normal-case tracking-tighter"
-          >
-            Find out more
-          </button>
+          {user ? (
+            <button
+              data-theme={bike.isElectric ? 'greentheme' : 'mytheme'}
+              className="btn btn-accent w-full text-2xl normal-case tracking-tighter"
+              onClick={() => {
+                onClick();
+              }}
+            >
+              Find out more
+            </button>
+          ) : (
+            <label
+              htmlFor="my-modal"
+              data-theme={bike.isElectric ? 'greentheme' : 'mytheme'}
+              className="btn btn-accent w-full text-2xl normal-case tracking-tighter"
+            >
+              Find out more
+            </label>
+          )}
         </div>
       </div>
     </div>

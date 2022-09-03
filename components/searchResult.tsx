@@ -14,6 +14,8 @@ import cx from 'classnames';
 import { SearchSort } from './searchbox';
 import { Bike } from '../utils/dbTypes';
 import BikeCard from './bikeCard';
+import { useRouter } from 'next/router';
+import { useAuth } from '../utils/useAuth';
 
 type SearchResultsProps = {
   bikeType?: string;
@@ -27,7 +29,8 @@ bikeTypeMap.set('road', 'Road');
 bikeTypeMap.set('xc', 'Cross country');
 
 const SearchResults = ({ bikeType, sort }: SearchResultsProps) => {
-  console.log(sort);
+  const { user } = useAuth();
+  const router = useRouter();
 
   const [bikes, setBikes] = useState<Bike[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -80,7 +83,15 @@ const SearchResults = ({ bikeType, sort }: SearchResultsProps) => {
         <>Loading...</>
       ) : (
         bikes.map((bike) => {
-          return <BikeCard key={bike.id} bike={bike} />;
+          return (
+            <BikeCard
+              key={bike.id}
+              bike={bike}
+              onClick={() => {
+                if (user) router.replace(`/bikes/${bike.id}`);
+              }}
+            />
+          );
         })
       )}
     </div>

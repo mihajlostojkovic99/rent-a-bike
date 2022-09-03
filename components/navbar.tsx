@@ -13,6 +13,8 @@ type NavbarProps = {
 const Navbar = ({ className }: NavbarProps) => {
   const { user, userData } = useAuth();
 
+  // console.log(user);
+
   if (userData?.isAdmin) {
     return (
       <div className={cx('w-full', className)}>
@@ -24,7 +26,7 @@ const Navbar = ({ className }: NavbarProps) => {
           </Link>
           <label
             htmlFor="my-drawer"
-            className="btn btn-accent btn-circle lg:hidden"
+            className="btn btn-circle btn-accent lg:hidden"
           >
             Menu
           </label>
@@ -36,7 +38,7 @@ const Navbar = ({ className }: NavbarProps) => {
   return (
     <div className={cx('w-full', className)}>
       <div className="mx-auto flex max-w-7xl items-center justify-between py-5 px-2 lg:px-5">
-        <Link href={user ? 'home' : '/'}>
+        <Link href={user ? '/home' : '/'}>
           <a className="cursor-pointer text-3xl font-bold text-accentBlue lg:text-4xl">
             GoBike
           </a>

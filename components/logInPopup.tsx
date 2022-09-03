@@ -30,9 +30,12 @@ const LogInPopup = ({ children }: LogInPopupProps) => {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const tmp = await login(data.email, data.password);
-      if (tmp) {
-        const userSnap = await getDoc(doc(db, 'users', tmp.user.uid));
+      const userCred = await login(data.email, data.password);
+      if (userCred) {
+        const userSnap = await getDoc(doc(db, 'users', userCred.user.uid));
+
+        console.log('User logging in is admin: ', userSnap.data()?.isAdmin);
+
         if (userSnap.data()?.isAdmin) {
           router.push('admin');
         } else {

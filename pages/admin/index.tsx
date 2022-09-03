@@ -10,10 +10,16 @@ import { verifyIdToken } from '../../utils/firebaseAdmin';
 import { db, userToJSON } from '../../utils/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import nookies from 'nookies';
+import { useRouter } from 'next/router';
 
 const Admin: NextPage = () => {
   const { user, userData } = useAuth();
-  console.log(userData?.isAdmin);
+  // const router = useRouter();
+  console.log('Admin page, is user admin: ', userData?.isAdmin);
+  // if (!userData) {
+  //   router.replace('/');
+  //   return <Layout>Not logged in</Layout>;
+  // }
   return (
     <Layout>
       <div>Dje si adminee {userData?.displayName}!</div>
@@ -24,6 +30,7 @@ const Admin: NextPage = () => {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const cookies = nookies.get(context);
+    // console.log('Admin token is: ', cookies.token.substring(0, 10), '...');
     const token = await verifyIdToken(cookies.token);
     const { uid } = token;
 
@@ -32,28 +39,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const isAdmin: boolean | undefined = userSnap.data()?.isAdmin;
 
     if (!isAdmin) {
-      console.log('user is not admin');
+      // console.log('user is not admin');
       return {
         redirect: {
-          destination: 'home',
+          destination: '/',
         },
-        props: [],
+        props: {},
       };
     }
-
-    console.log('all ok ADMIN INDEX');
 
     return {
       props: {},
     };
   } catch (err) {
-    console.log('ADMIN INDEX PAGE', err);
-    // nookies.destroy(context, 'token');
+    // console.log('ADMIN INDEX PAGE', err);
     return {
       redirect: {
         destination: '/',
       },
-      props: [],
+      props: {},
     };
   }
 };

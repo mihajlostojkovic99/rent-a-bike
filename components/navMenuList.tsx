@@ -17,7 +17,7 @@ const NavMenuList = () => {
         <li>
           <a
             onClick={() => {
-              logout().then(() => Router.push('/'));
+              logout();
             }}
           >
             Log out

@@ -29,6 +29,7 @@ export const auth = getAuth(firebase);
 export const db = getFirestore(firebase);
 export const storage = getStorage(firebase);
 export const profilePictures = ref(storage, 'profilePictures');
+export const bikePictures = ref(storage, 'bikePictures');
 
 export function userToJSON(user: DocumentData | undefined) {
   return {

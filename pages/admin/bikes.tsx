@@ -7,14 +7,16 @@ import bike from '../public/home_bike.jpg';
 import { useAuth } from '../../utils/useAuth';
 import { AuthCheck } from '../../utils/authCheck';
 import { verifyIdToken } from '../../utils/firebaseAdmin';
-import { db, userToJSON } from '../../utils/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { bikePictures, db, storage, userToJSON } from '../../utils/firebase';
+import { addDoc, collection, doc, getDoc, setDoc } from 'firebase/firestore';
 import nookies from 'nookies';
 import { Controller, useForm } from 'react-hook-form';
 import AsyncSelect from 'react-select/async';
 import Select from 'react-select';
 import { useState } from 'react';
 import BikeCard from '../../components/bikeCard';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import cx from 'classnames';
 
 export const selectStyles = {
   control: (styles: any, { isDisabled, isFocused, isSelected }: any) => ({
@@ -46,11 +48,17 @@ type FormData = {
   brakes: string;
   isElectric: { value: boolean; label: string };
   pricePerHour: number;
-  picture: File[];
+  photoURL: File[];
 };
 
-const Bikes: NextPage = () => {
+type BikesProps = {
+  uid: string;
+};
+
+const Bikes: NextPage<BikesProps> = ({ uid }: BikesProps) => {
   const { user, userData } = useAuth();
+
+  const [uploading, setUploading] = useState(false);
 
   const {
     register,
@@ -62,17 +70,48 @@ const Bikes: NextPage = () => {
     defaultValues: {
       isElectric: { value: false, label: 'No' },
       type: { value: 'mtb', label: 'Mountain bike' },
-      picture: [],
+      photoURL: [],
     },
   });
 
   const formData = watch();
 
-  console.log(formData.picture[0]);
-
   const [preview, setPreview] = useState<boolean>(false);
 
-  const onSubmit = async (data: FormData) => {};
+  const onSubmit = async (data: FormData) => {
+    setUploading(true);
+    const modelsRef = collection(db, 'bikes', data.type.value, 'models');
+    const bikeRef = await addDoc(modelsRef, {
+      brakes: data.brakes,
+      brand: data.brand,
+      isElectric: data.isElectric.value,
+      model: data.model,
+      photoURL: '',
+      pricePerHour: data.pricePerHour,
+      rating: 5.0,
+      speeds: data.speeds,
+      type: data.type.label,
+      year: data.year,
+    });
+
+    const bikePicturesRef = ref(
+      bikePictures,
+      `${data.type.value}/${bikeRef.id}.png`,
+    );
+
+    const uploadTask = await uploadBytes(bikePicturesRef, data.photoURL[0]);
+
+    const photoURL = await getDownloadURL(uploadTask.ref);
+
+    await setDoc(
+      bikeRef,
+      {
+        photoURL: photoURL,
+      },
+      { merge: true },
+    );
+    setUploading(false);
+  };
 
   return (
     <Layout>
@@ -161,6 +200,11 @@ const Bikes: NextPage = () => {
                   {...register('year', {
                     required: 'Year is required',
                     valueAsNumber: true,
+                    min: { value: 2010, message: 'Minimum year is 2010' },
+                    max: {
+                      value: new Date().getFullYear(),
+                      message: 'Future years are not allowed',
+                    },
                   })}
                   type="number"
                   placeholder="Year"
@@ -184,6 +228,10 @@ const Bikes: NextPage = () => {
                   {...register('speeds', {
                     required: 'Number of speeds is required',
                     valueAsNumber: true,
+                    min: {
+                      value: 1,
+                      message: 'Bike must have at least 1 speed',
+                    },
                   })}
                   type="number"
                   placeholder="Speeds"
@@ -257,6 +305,7 @@ const Bikes: NextPage = () => {
                   {...register('pricePerHour', {
                     required: 'Price per hour is required',
                     valueAsNumber: true,
+                    min: { value: 0, message: 'Price cannot be negative' },
                   })}
                   type="number"
                   placeholder="Price per hour"
@@ -270,7 +319,7 @@ const Bikes: NextPage = () => {
               </div>
 
               {/*BIKE IMAGE INPUT*/}
-              <div>
+              <div className="form-control">
                 <label className="label">
                   <span className="label-text text-accentBlue">
                     Bike image (PNG)
@@ -279,12 +328,19 @@ const Bikes: NextPage = () => {
                 <label className="btn btn-outline btn-accent text-lg normal-case">
                   Upload image
                   <input
-                    {...register('picture')}
+                    {...register('photoURL', {
+                      required: 'Please upload bike image',
+                    })}
                     type="file"
                     className="hidden"
                     accept="image/png"
                   />
                 </label>
+                {errors.photoURL && (
+                  <span className="label-text-alt text-red-600">
+                    {errors.photoURL.message}
+                  </span>
+                )}
               </div>
 
               {/*PREVIEW TOGGLE*/}
@@ -310,7 +366,11 @@ const Bikes: NextPage = () => {
                     Add the model
                   </span>
                 </label>
-                <button className="btn btn-accent w-full text-lg normal-case">
+                <button
+                  className={cx('btn btn-accent w-full text-lg normal-case', {
+                    loading: uploading,
+                  })}
+                >
                   Submit
                 </button>
               </div>
@@ -328,12 +388,13 @@ const Bikes: NextPage = () => {
                   isElectric: formData.isElectric.value,
                   pricePerHour: formData.pricePerHour || 0,
                   photoURL:
-                    formData.picture.length > 0
-                      ? URL.createObjectURL(formData.picture[0])
+                    formData.photoURL.length > 0
+                      ? URL.createObjectURL(formData.photoURL[0])
                       : '',
                   id: 'preview',
                   rating: 5.0,
                 }}
+                onClick={() => {}}
               />
             )}
           </div>
@@ -346,6 +407,7 @@ const Bikes: NextPage = () => {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const cookies = nookies.get(context);
+    // console.log('BIKES token is: ', cookies.token.substring(0, 10), '...');
     const token = await verifyIdToken(cookies.token);
     const { uid } = token;
 
@@ -356,19 +418,21 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     if (!isAdmin) {
       return {
         redirect: {
-          destination: 'home',
+          destination: '/',
         },
         props: [],
       };
     }
 
-    console.log('all ok ADMIN BIKES');
+    // console.log('all ok ADMIN BIKES');
 
     return {
-      props: {},
+      props: {
+        uid: uid,
+      },
     };
   } catch (err) {
-    console.log('BIKES PAGE', err);
+    // console.log('BIKES PAGE', err);
     // nookies.destroy(context, 'token');
     return {
       redirect: {

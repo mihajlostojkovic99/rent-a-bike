@@ -24,7 +24,7 @@ import { UserData } from './dbTypes';
 
 type Auth = {
   user: FirebaseUser | null | undefined;
-  userData: UserData | undefined; //TOO MUCH RE-RENDERING CONSIDER useRef
+  userData: UserData | undefined | null; //TOO MUCH RE-RENDERING CONSIDER useRef
   // userPath: string;
   getUser: () => FirebaseUser | null;
   login: (
@@ -39,7 +39,6 @@ type Auth = {
     email: string,
     password: string,
   ) => Promise<UserCredential | undefined>;
-  loading: boolean;
 };
 
 type AuthProviderProps = {
@@ -47,7 +46,7 @@ type AuthProviderProps = {
 };
 
 export const AuthContext = createContext<Auth>({
-  user: null,
+  user: undefined,
   userData: undefined,
   // userPath: '',
   getUser: () => null,
@@ -57,7 +56,6 @@ export const AuthContext = createContext<Auth>({
   deleteAccount: async () => undefined,
   logout: async () => {},
   signUp: async () => undefined,
-  loading: false,
 });
 
 export function useAuth() {
@@ -67,24 +65,26 @@ export function useAuth() {
 export function AuthProvider({ children }: AuthProviderProps) {
   // const [user, setUser] = useState<FirebaseUser | null | undefined>();
   const [user, loading] = useAuthState(auth);
-  const [userData, setUserData] = useState<UserData | undefined>(undefined);
+  const [userData, setUserData] = useState<UserData | undefined | null>(
+    undefined,
+  );
   // const [userPath, setUserPath] = useState<string>('');
   // const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
   async function login(email: string, password: string) {
-    console.log('aaaa');
+    console.log('login');
     const cred = await signInWithEmailAndPassword(auth, email, password);
     // Router.push('home');
-    router.push('home');
-    console.log('bbbb');
+    // router.push('home');
+    // console.log('bbbb');
     return cred;
   }
 
   const loginGoogle = async () => {
     const cred = await signInWithRedirect(auth, new GoogleAuthProvider());
-    router.push('home');
-    console.log('bbbb');
+    // router.push('home');
+    // console.log('bbbb');
     return cred;
   };
 
@@ -108,9 +108,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   async function logout() {
-    signOut(auth).then(() => {
-      Router.push('/');
-    });
+    await signOut(auth);
+    nookies.set(undefined, 'token', '');
+    router.push('/');
   }
 
   async function signUp(email: string, password: string) {
@@ -134,8 +134,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
         // setLoading(false);
       } else {
-        setUserData(undefined);
-        nookies.set(undefined, 'token', '', {});
+        setUserData(null);
+        // nookies.set(undefined, 'token', '', {});
       }
     }
     fetchData();
@@ -154,7 +154,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     deleteAccount,
     logout,
     signUp,
-    loading,
   };
 
   return (
