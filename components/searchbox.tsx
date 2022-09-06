@@ -11,6 +11,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import SearchResults from './searchResult';
 import { bikeTypes } from '../lib/bikeTypes';
+import MyDateTimePicker from './myDateTimePicker';
 
 type SearchboxProps = {
   className?: string;
@@ -25,7 +26,7 @@ const sortOptions = [
 
 export type SearchSort = 'ascending' | 'descending' | 'popularity';
 
-export const selectStyles = {
+export const selectStylesGray = {
   control: (styles: any, { isDisabled, isFocused, isSelected }: any) => ({
     ...styles,
     'backgroundColor': '#E3E3E3',
@@ -45,7 +46,7 @@ export const selectStyles = {
   }),
 };
 
-const loadLocations = async () => {
+export const loadLocations = async () => {
   const locationsSnap = await getDocs(collection(db, 'locations'));
 
   const locations: { value: string; label: string }[] = [];
@@ -62,8 +63,10 @@ const loadLocations = async () => {
 
 const Searchbox = ({ className, children }: SearchboxProps) => {
   const [sameDayReturn, setSameDayReturn] = useState<boolean>(true);
-  const [startTime, setStartTime] = useState<Date | null>(new Date());
-  const [endTime, setEndTime] = useState<Date | null>(new Date());
+  const [startTime, setStartTime] = useState<Date | null | undefined>(
+    new Date(),
+  );
+  const [endTime, setEndTime] = useState<Date | null | undefined>(new Date());
   const [searchVisible, setSearchVisible] = useState<boolean>(false);
 
   const typeSelect = useRef<string | undefined>();
@@ -109,7 +112,7 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
                 if (val) typeSelect.current = val?.value;
                 else typeSelect.current = undefined;
               }}
-              styles={selectStyles}
+              styles={selectStylesGray}
             />
           </div>
 
@@ -127,7 +130,7 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
                 if (val) locationSelect.current = val?.value;
                 else locationSelect.current = undefined;
               }}
-              styles={selectStyles}
+              styles={selectStylesGray}
             />
           </div>
           <div className="mx-1 2xl:mx-2">
@@ -154,6 +157,12 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
                   ampm={false}
                 />
               </ThemeProvider>
+              {/* <MyDateTimePicker
+                value={startTime}
+                onChange={(newValue) => {
+                  setStartTime(newValue);
+                }}
+              /> */}
             </div>
           </div>
           <div className="mx-1 2xl:mx-2">
@@ -188,6 +197,12 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
                 />
               </ThemeProvider>
             ) : (
+              // <MyDateTimePicker
+              //   value={endTime}
+              //   onChange={(newValue) => {
+              //     setEndTime(newValue);
+              //   }}
+              // />
               <ThemeProvider theme={theme}>
                 <DateTimePicker
                   renderInput={(props) => (
@@ -220,7 +235,7 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
               onChange={(val) =>
                 (sortSelect.current = val?.value as SearchSort)
               }
-              styles={selectStyles}
+              styles={selectStylesGray}
             />
           </div>
           <div className=" mx-2 mt-8 mb-5 lg:my-auto lg:ml-12 lg:mr-0">
@@ -234,7 +249,13 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
         </div>
       </div>
       {searchVisible && (
-        <SearchResults bikeType={bikeType} location={location} sort={sort} />
+        <SearchResults
+          bikeType={bikeType}
+          location={location}
+          sort={sort}
+          startTime={startTime}
+          endTime={endTime}
+        />
       )}
     </>
   );

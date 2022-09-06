@@ -31,6 +31,8 @@ type SearchResultsProps = {
   bikeType?: string;
   location?: string;
   sort?: SearchSort;
+  startTime?: Date | null;
+  endTime?: Date | null;
 };
 
 // const bikeTypeMap = new Map<string, string>();
@@ -43,6 +45,8 @@ const SearchResults = ({
   bikeType,
   location,
   sort = 'ascending',
+  startTime,
+  endTime,
 }: SearchResultsProps) => {
   const { user } = useAuth();
   const router = useRouter();
@@ -124,12 +128,16 @@ const SearchResults = ({
               onClick={() => {
                 if (!user) return;
                 if (location) {
-                  router.replace({
+                  router.push({
                     pathname: `/bikes/${bike.id}`,
-                    query: { location: location },
+                    query: {
+                      locationId: location,
+                      startTime: startTime?.getTime(),
+                      endTime: endTime?.getTime(),
+                    },
                   });
                 } else {
-                  router.replace(`/bikes/${bike.id}`);
+                  router.push(`/bikes/${bike.id}`);
                 }
               }}
             />
