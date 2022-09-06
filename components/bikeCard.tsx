@@ -1,7 +1,7 @@
 import { LightningBoltIcon, StarIcon } from '@heroicons/react/solid';
 import Image from 'next/image';
 import cx from 'classnames';
-import { Bike } from '../utils/dbTypes';
+import { Bike } from '../lib/dbTypes';
 import { useAuth } from '../utils/useAuth';
 
 type BikeCardProps = {
@@ -15,7 +15,7 @@ const BikeCard = ({ bike, onClick }: BikeCardProps) => {
   return (
     <div
       className={cx(
-        'card-compact card w-full tracking-tighter  shadow-xl lg:w-96',
+        'card card-compact w-full tracking-tighter  shadow-xl lg:w-96',
         {
           'bg-electricGreen/20': bike.isElectric,
           'bg-accentBlue/20': !bike.isElectric,

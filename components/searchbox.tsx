@@ -10,6 +10,7 @@ import Select from 'react-select';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import SearchResults from './searchResult';
+import { bikeTypes } from '../lib/bikeTypes';
 
 type SearchboxProps = {
   className?: string;
@@ -44,16 +45,19 @@ export const selectStyles = {
   }),
 };
 
-export const loadBikeTypes = async () => {
-  const typesSnap = await getDocs(collection(db, 'bikes'));
+const loadLocations = async () => {
+  const locationsSnap = await getDocs(collection(db, 'locations'));
 
-  const types: { value: string; label: string }[] = [];
+  const locations: { value: string; label: string }[] = [];
 
-  typesSnap.forEach((typeSnap) => {
-    types.push({ value: typeSnap.id, label: typeSnap.data().label });
+  locationsSnap.forEach((typeSnap) => {
+    locations.push({
+      value: typeSnap.id,
+      label: `${typeSnap.data().place}, ${typeSnap.data().city}`,
+    });
   });
 
-  return types;
+  return locations;
 };
 
 const Searchbox = ({ className, children }: SearchboxProps) => {
@@ -65,26 +69,17 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
   const typeSelect = useRef<string | undefined>();
   const [bikeType, setBikeType] = useState<string | undefined>();
 
+  const locationSelect = useRef<string | undefined>();
+  const [location, setLocation] = useState<string | undefined>();
+
   const sortSelect = useRef<SearchSort | undefined>('ascending');
   const [sort, setSort] = useState<SearchSort | undefined>();
 
-  const loadLocations = async () => {
-    const locationsSnap = await getDocs(collection(db, 'locations'));
-
-    const locations: { value: string; label: string }[] = [];
-
-    locationsSnap.forEach((typeSnap) => {
-      locations.push({
-        value: typeSnap.id,
-        label: `${typeSnap.data().place}, ${typeSnap.data().city}`,
-      });
-    });
-
-    return locations;
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleSearch = () => {
     setBikeType(typeSelect.current);
+    setLocation(locationSelect.current);
     setSort(sortSelect.current);
     if (!searchVisible) setSearchVisible(true);
   };
@@ -105,11 +100,9 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
             <div className="mb-2 mt-5 ml-1 text-center font-semibold text-accentBlue lg:mt-0 lg:text-left lg:font-normal lg:text-justBlack">
               Type
             </div>
-            <AsyncSelect
-              loadOptions={loadBikeTypes}
+            <Select
+              options={bikeTypes}
               isClearable
-              defaultOptions
-              cacheOptions
               placeholder="Bike type"
               isSearchable={false}
               onChange={(val) => {
@@ -130,7 +123,10 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
               cacheOptions
               placeholder="Location"
               isSearchable={false}
-              onChange={(val) => console.log(val)}
+              onChange={(val) => {
+                if (val) locationSelect.current = val?.value;
+                else locationSelect.current = undefined;
+              }}
               styles={selectStyles}
             />
           </div>
@@ -237,7 +233,9 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
           </div>
         </div>
       </div>
-      {searchVisible && <SearchResults bikeType={bikeType} sort={sort} />}
+      {searchVisible && (
+        <SearchResults bikeType={bikeType} location={location} sort={sort} />
+      )}
     </>
   );
 };

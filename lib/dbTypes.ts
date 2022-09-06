@@ -25,3 +25,16 @@ export type Bike = {
   isElectric: boolean | null;
   rating: number | null;
 };
+
+export type Location = {
+  id: string;
+  city: string;
+  place: string;
+};
+
+export type Stock = {
+  id: string;
+  bikeId: string;
+  location: string;
+  total: number;
+};

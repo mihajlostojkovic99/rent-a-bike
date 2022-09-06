@@ -25,7 +25,7 @@ import { GetServerSideProps } from 'next';
 import nookies from 'nookies';
 import { verifyIdToken } from '../utils/firebaseAdmin';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
-import { UserData } from '../utils/dbTypes';
+import { UserData } from '../lib/dbTypes';
 
 type FormData = {
   firstName: string;

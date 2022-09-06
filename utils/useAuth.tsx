@@ -20,7 +20,7 @@ import { auth, db, firebase } from './firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import Router, { useRouter } from 'next/router';
 import { deleteDoc, doc, DocumentData, onSnapshot } from 'firebase/firestore';
-import { UserData } from './dbTypes';
+import { UserData } from '../lib/dbTypes';
 
 type Auth = {
   user: FirebaseUser | null | undefined;

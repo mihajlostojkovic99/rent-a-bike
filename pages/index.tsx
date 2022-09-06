@@ -6,10 +6,6 @@ import Searchbox from '../components/searchbox';
 import bike from '../public/bg_bike.jpg';
 import { useAuth } from '../utils/useAuth';
 import Router from 'next/router';
-import nookies from 'nookies';
-import { verifyIdToken } from '../utils/firebaseAdmin';
-import { doc, DocumentData, getDoc } from 'firebase/firestore';
-import { db, userToJSON } from '../utils/firebase';
 
 const Index: NextPage = () => {
   const { user, userData } = useAuth();
@@ -47,7 +43,7 @@ const Index: NextPage = () => {
             <div className="mx-auto flex w-fit flex-col items-center text-center text-5xl font-extrabold tracking-tight text-white lg:text-7xl">
               <div>Book your next ride with us.</div>
               <Link href="/signup" passHref>
-                <button className="btn btn-accent mt-12 h-16 w-48 text-3xl normal-case outline outline-2 outline-white/40 lg:mt-20 lg:h-24 lg:w-72 lg:text-5xl">
+                <button className="btn btn-accent outline mt-12 h-16 w-48 text-3xl normal-case outline-2 outline-white/40 lg:mt-20 lg:h-24 lg:w-72 lg:text-5xl">
                   Join now
                 </button>
               </Link>

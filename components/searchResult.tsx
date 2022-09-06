@@ -2,40 +2,55 @@ import {
   collection,
   collectionGroup,
   doc,
+  getDoc,
   getDocs,
+  limit,
   orderBy,
   query,
+  where,
 } from 'firebase/firestore';
 import Image from 'next/image';
 import { StarIcon, LightningBoltIcon } from '@heroicons/react/solid';
-import React, { forwardRef, RefObject, useEffect, useState } from 'react';
+import React, {
+  Dispatch,
+  forwardRef,
+  RefObject,
+  SetStateAction,
+  useEffect,
+  useState,
+} from 'react';
 import { db } from '../utils/firebase';
 import cx from 'classnames';
 import { SearchSort } from './searchbox';
-import { Bike } from '../utils/dbTypes';
+import { Bike } from '../lib/dbTypes';
 import BikeCard from './bikeCard';
 import { useRouter } from 'next/router';
 import { useAuth } from '../utils/useAuth';
 
 type SearchResultsProps = {
   bikeType?: string;
+  location?: string;
   sort?: SearchSort;
 };
 
-const bikeTypeMap = new Map<string, string>();
-bikeTypeMap.set('mtb', 'Mountain bike');
-bikeTypeMap.set('city', 'City');
-bikeTypeMap.set('road', 'Road');
-bikeTypeMap.set('xc', 'Cross country');
+// const bikeTypeMap = new Map<string, string>();
+// bikeTypeMap.set('mtb', 'Mountain bike');
+// bikeTypeMap.set('city', 'City');
+// bikeTypeMap.set('road', 'Road');
+// bikeTypeMap.set('xc', 'Cross country');
 
-const SearchResults = ({ bikeType, sort }: SearchResultsProps) => {
+const SearchResults = ({
+  bikeType,
+  location,
+  sort = 'ascending',
+}: SearchResultsProps) => {
   const { user } = useAuth();
   const router = useRouter();
 
   const [bikes, setBikes] = useState<Bike[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  console.log(bikes);
+  // console.log(bikes);
 
   useEffect(() => {
     setLoading(true);
@@ -55,7 +70,7 @@ const SearchResults = ({ bikeType, sort }: SearchResultsProps) => {
 
       bikesSnap.forEach((bikeSnap) => {
         bikesArr.push({
-          id: bikeSnap.id,
+          id: bikeSnap.data().id,
           brand: bikeSnap.data().brand,
           model: bikeSnap.data().model,
           pricePerHour: bikeSnap.data().pricePerHour,
@@ -69,13 +84,32 @@ const SearchResults = ({ bikeType, sort }: SearchResultsProps) => {
         });
       });
 
-      setBikes(bikesArr);
+      if (location) {
+        const bikesAtLocation: Bike[] = [];
+
+        for (const bike of bikesArr) {
+          const checkLocationQuery = query(
+            collection(db, 'stock'),
+            where('bikeId', '==', bike.id),
+            where('locationId', '==', location),
+            limit(1),
+          );
+          const stockSnap = await getDocs(checkLocationQuery);
+
+          if (!stockSnap.empty) {
+            bikesAtLocation.push(bike);
+          }
+        }
+        setBikes(bikesAtLocation);
+      } else {
+        setBikes(bikesArr);
+      }
 
       setLoading(false);
     }
 
     fetchData();
-  }, [bikeType, sort]);
+  }, [bikeType, location, sort]);
 
   return (
     <div className="mx-auto mt-8 flex max-w-7xl flex-wrap gap-8 rounded-lg bg-offWhite p-4 text-base text-black lg:rounded-3xl lg:p-8">
@@ -88,7 +122,15 @@ const SearchResults = ({ bikeType, sort }: SearchResultsProps) => {
               key={bike.id}
               bike={bike}
               onClick={() => {
-                if (user) router.replace(`/bikes/${bike.id}`);
+                if (!user) return;
+                if (location) {
+                  router.replace({
+                    pathname: `/bikes/${bike.id}`,
+                    query: { location: location },
+                  });
+                } else {
+                  router.replace(`/bikes/${bike.id}`);
+                }
               }}
             />
           );

@@ -7,7 +7,7 @@ import { verifyIdToken } from '../utils/firebaseAdmin';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, userToJSON } from '../utils/firebase';
 import nookies from 'nookies';
-import { UserData } from '../utils/dbTypes';
+import { UserData } from '../lib/dbTypes';
 
 type HomeProps = {
   userData: UserData;
