@@ -16,3 +16,9 @@ export const bikeTypes = [
     label: 'Cross country',
   },
 ] as const;
+
+export const bikeTypeMap = new Map<string, string>();
+bikeTypeMap.set('mtb', 'Mountain bike');
+bikeTypeMap.set('city', 'City');
+bikeTypeMap.set('road', 'Road');
+bikeTypeMap.set('xc', 'Cross country');

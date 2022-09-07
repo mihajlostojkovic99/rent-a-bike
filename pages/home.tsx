@@ -8,12 +8,15 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db, userToJSON } from '../utils/firebase';
 import nookies from 'nookies';
 import { UserData } from '../lib/dbTypes';
+import { useAuth } from '../utils/useAuth';
 
 type HomeProps = {
   userData: UserData;
 };
 
 const Home: NextPage<HomeProps> = ({ userData }: HomeProps) => {
+  // const { user } = useAuth();
+  // console.log(user);
   console.log('Home rendered');
 
   return (

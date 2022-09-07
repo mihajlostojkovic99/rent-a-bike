@@ -35,12 +35,6 @@ type SearchResultsProps = {
   endTime?: Date | null;
 };
 
-// const bikeTypeMap = new Map<string, string>();
-// bikeTypeMap.set('mtb', 'Mountain bike');
-// bikeTypeMap.set('city', 'City');
-// bikeTypeMap.set('road', 'Road');
-// bikeTypeMap.set('xc', 'Cross country');
-
 const SearchResults = ({
   bikeType,
   location,

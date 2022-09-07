@@ -138,31 +138,13 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
               Pick up time
             </div>
             <div className="flex items-center gap-1">
-              <ThemeProvider theme={theme}>
-                <DateTimePicker
-                  renderInput={(props) => (
-                    <TextField
-                      {...props}
-                      size="small"
-                      className="w-full tracking-tight lg:w-52"
-                    />
-                  )}
-                  value={startTime}
-                  onChange={(newValue) => {
-                    setStartTime(newValue);
-                  }}
-                  inputFormat={'dd/MM/yyyy HH:mm'}
-                  disablePast
-                  minutesStep={5}
-                  ampm={false}
-                />
-              </ThemeProvider>
-              {/* <MyDateTimePicker
+              <MyDateTimePicker
                 value={startTime}
                 onChange={(newValue) => {
                   setStartTime(newValue);
                 }}
-              /> */}
+                theme={theme}
+              />
             </div>
           </div>
           <div className="mx-1 2xl:mx-2">
@@ -197,31 +179,13 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
                 />
               </ThemeProvider>
             ) : (
-              // <MyDateTimePicker
-              //   value={endTime}
-              //   onChange={(newValue) => {
-              //     setEndTime(newValue);
-              //   }}
-              // />
-              <ThemeProvider theme={theme}>
-                <DateTimePicker
-                  renderInput={(props) => (
-                    <TextField
-                      {...props}
-                      size="small"
-                      className="w-full tracking-tight lg:w-52"
-                    />
-                  )}
-                  value={endTime}
-                  onChange={(newValue) => {
-                    setEndTime(newValue);
-                  }}
-                  inputFormat={'dd/MM/yyyy HH:mm'}
-                  disablePast
-                  minutesStep={5}
-                  ampm={false}
-                />
-              </ThemeProvider>
+              <MyDateTimePicker
+                value={endTime}
+                onChange={(newValue) => {
+                  setEndTime(newValue);
+                }}
+                theme={theme}
+              />
             )}
           </div>
           <div className="mx-1 2xl:mx-2">

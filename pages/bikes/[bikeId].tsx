@@ -17,6 +17,8 @@ import { loadLocations } from '../../components/searchbox';
 import Select from 'react-select/';
 import { PulseLoader } from 'react-spinners';
 import MyDateTimePicker from '../../components/myDateTimePicker';
+import { muiTheme } from '../../utils/datePicker';
+import Reviews from '../../components/reviews';
 
 export async function getStaticPaths() {
   const querySnap = await getDocs(collectionGroup(db, 'models'));
@@ -77,24 +79,28 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
   const router = useRouter();
   const locationId = router.query.locationId;
 
-  const [locations, setLocations] = useState<
-    | {
-        label: string;
-        value: string;
-      }[]
-    | undefined
-  >();
+  console.log(
+    'startTime: ',
+    new Date(parseInt(router.query.startTime as string)),
+  );
 
-  const [startTime, setStartTime] = useState<Date | null | undefined>();
+  const [startTime, setStartTime] = useState<Date | null | undefined>(
+    router.query.startTime
+      ? new Date(parseInt(router.query.startTime as string))
+      : new Date(),
+  );
+  const [endTime, setEndTime] = useState<Date | null | undefined>(
+    router.query.endTime
+      ? new Date(parseInt(router.query.endTime as string))
+      : new Date(),
+  );
 
-  useEffect(() => {
-    const fetchLocations = async () => {
-      setLocations(await loadLocations());
-    };
-    fetchLocations();
-  }, []);
+  const [helmet, setHelmet] = useState(false);
+  const [childSeat, setChildSeat] = useState(false);
 
-  console.log(locationId);
+  const [total, setTotal] = useState(bike.pricePerHour);
+
+  // console.log(locationId);
   return (
     <Layout>
       <div className="mt-56">
@@ -143,27 +149,66 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
                 )}
               </div>
             </div>
-            <div>
-              {!locations && <PulseLoader color="#008CEE" />}
-              {locations && (
-                <div className="flex">
-                  <Select
-                    options={locations}
-                    defaultValue={locations.find((val) => {
-                      if (val.value === locationId) return true;
-                      else return false;
-                    })}
-                    styles={selectStylesGray}
-                  />
-                  {/* <MyDateTimePicker
+            <div className="mt-8 flex items-center justify-between">
+              <div className="flex w-fit flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-semibold text-justBlack lg:font-normal">
+                    Pick up time:
+                  </div>
+                  <MyDateTimePicker
                     value={startTime}
-                    onChange={(val) => {
-                      setStartTime(val);
+                    onChange={(newValue) => {
+                      setStartTime(newValue);
                     }}
-                  /> */}
+                    theme={muiTheme}
+                  />
                 </div>
-              )}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-semibold text-justBlack lg:font-normal">
+                    Return time:
+                  </div>
+                  <MyDateTimePicker
+                    value={endTime}
+                    onChange={(newValue) => {
+                      setEndTime(newValue);
+                    }}
+                    theme={muiTheme}
+                  />
+                </div>
+              </div>
+              <div className="flex h-full flex-col justify-evenly">
+                <label className="label mt-5 mb-2 ml-1 cursor-pointer justify-start p-0 lg:mt-0">
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-accent checkbox-sm mr-2"
+                    name="returnDay"
+                    id="returnDay"
+                    checked={helmet}
+                    onChange={() => setHelmet(!helmet)}
+                  />
+                  <span>Helmet</span>
+                </label>
+
+                <label className="label mt-5 mb-2 ml-1 cursor-pointer justify-start p-0 lg:mt-0">
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-accent checkbox-sm mr-2"
+                    name="returnDay"
+                    id="returnDay"
+                    checked={childSeat}
+                    onChange={() => setChildSeat(!childSeat)}
+                  />
+                  <span>Child seat</span>
+                </label>
+              </div>
+              <div className="text-2xl font-extrabold tracking-tighter">
+                Total: ${total}
+              </div>
+              <button className="btn btn-accent btn-wide h-full text-3xl normal-case">
+                Proceed
+              </button>
             </div>
+            <Reviews bike={bike} />
           </div>
         </div>
       </div>

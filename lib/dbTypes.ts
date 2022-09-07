@@ -38,3 +38,12 @@ export type Stock = {
   location: string;
   total: number;
 };
+
+export type Review = {
+  id: string;
+  userId: string;
+  rating: number;
+  displayName: string;
+  photoURL: string;
+  text: string;
+};

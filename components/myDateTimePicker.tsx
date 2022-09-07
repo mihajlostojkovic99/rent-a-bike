@@ -1,38 +1,46 @@
-import { TextField } from '@mui/material';
+import { TextField, Theme } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/system';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
-export const theme = createTheme({
-  palette: {
-    background: {
-      paper: '#E3E3E3',
-    },
-    text: {
-      primary: '#242929',
-      secondary: '#46505A',
-    },
-    action: {
-      active: '#242929',
-    },
-  },
-  typography: {
-    fontFamily: ['Inter', 'Poppins', 'sans-serif'].join(','),
-    body1: {
-      'fontSize': '1.25rem',
-      '@media (min-width: 1024px)': {
-        fontSize: '1rem',
-      },
-    },
-  },
-});
+// export const theme = createTheme({
+//   palette: {
+//     background: {
+//       paper: '#E3E3E3',
+//     },
+//     text: {
+//       primary: '#242929',
+//       secondary: '#46505A',
+//     },
+//     action: {
+//       active: '#242929',
+//     },
+//   },
+//   typography: {
+//     fontFamily: ['Inter', 'Poppins', 'sans-serif'].join(','),
+//     body1: {
+//       'fontSize': '1.25rem',
+//       '@media (min-width: 1024px)': {
+//         fontSize: '1rem',
+//       },
+//     },
+//   },
+// });
 
 type MyDateTimePickerProps = {
   value: any;
   onChange: (value: any, keyboardInputValue?: string | undefined) => void;
+  theme: Theme;
 };
 
-const MyDateTimePicker = ({ value, onChange }: MyDateTimePickerProps) => {
+const MyDateTimePicker = ({
+  value,
+  onChange,
+  theme,
+}: MyDateTimePickerProps) => {
+  // const value = new Date();
+  // const onChange = () => {};
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <ThemeProvider theme={theme}>
