@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { auth, db } from '../utils/firebase';
 import { useAuth } from '../utils/useAuth';
+import nookies from 'nookies';
 
 type FormData = {
   email: string;
@@ -35,6 +36,10 @@ const LogInPopup = ({ children }: LogInPopupProps) => {
         const userSnap = await getDoc(doc(db, 'users', userCred.user.uid));
 
         console.log('User logging in is admin: ', userSnap.data()?.isAdmin);
+
+        const user = userCred.user;
+        const token = await user.getIdToken();
+        nookies.set(undefined, 'token', token, {});
 
         if (userSnap.data()?.isAdmin) {
           router.push('admin');

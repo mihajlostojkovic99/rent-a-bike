@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export type UserData = {
   uid: string;
   displayName: string;
@@ -46,4 +48,11 @@ export type Review = {
   displayName: string;
   photoURL: string;
   text: string;
+};
+
+export type Reservation = {
+  id: string;
+  userId: string;
+  startDate: Timestamp;
+  endDate: Timestamp;
 };

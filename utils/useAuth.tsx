@@ -68,6 +68,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [userData, setUserData] = useState<UserData | undefined | null>(
     undefined,
   );
+  // console.log('USEAUTH');
   // const [userPath, setUserPath] = useState<string>('');
   // const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();

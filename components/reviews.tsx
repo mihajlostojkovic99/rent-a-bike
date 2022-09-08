@@ -14,7 +14,7 @@ type CommentsProps = {
 const Reviews = ({ bike }: CommentsProps) => {
   const [reviews, setReviews] = useState<Review[]>([]);
 
-  console.log(reviews);
+  // console.log(reviews);
 
   useEffect(() => {
     const type = bikeTypes.find((type) => {
