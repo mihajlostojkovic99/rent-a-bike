@@ -1,12 +1,26 @@
 import { Timestamp } from 'firebase/firestore';
 
+// export type UserData = {
+//   uid: string;
+//   displayName: string;
+//   photoURL: string;
+//   aboutMe: string;
+//   birthday: number;
+//   createdAt: number;
+//   balance: number;
+//   city: string;
+//   reviews: number;
+//   rides: number;
+//   isAdmin: boolean;
+// };
+
 export type UserData = {
   uid: string;
   displayName: string;
   photoURL: string;
   aboutMe: string;
-  birthday: number;
-  createdAt: number;
+  birthday: Timestamp;
+  createdAt: Timestamp;
   balance: number;
   city: string;
   reviews: number;
@@ -43,7 +57,7 @@ export type Stock = {
 
 export type Review = {
   id: string;
-  userId: string;
+  uid: string;
   rating: number;
   displayName: string;
   photoURL: string;
@@ -52,7 +66,9 @@ export type Review = {
 
 export type Reservation = {
   id: string;
-  userId: string;
+  uid: string;
   startDate: Timestamp;
   endDate: Timestamp;
+  bikeModel: string;
+  location: string;
 };

@@ -8,12 +8,18 @@ import { muiTheme2 } from '../utils/datePicker';
 import { db, profilePictures, userToJSON } from '../utils/firebase';
 import { useAuth } from '../utils/useAuth';
 import {
+  collection,
+  collectionGroup,
   doc,
   DocumentData,
   DocumentReference,
   getDoc,
+  getDocs,
+  limit,
+  query,
   Timestamp,
   updateDoc,
+  where,
 } from 'firebase/firestore';
 import cx from 'classnames';
 import { differenceInDays, differenceInYears } from 'date-fns';
@@ -25,7 +31,7 @@ import { GetServerSideProps } from 'next';
 import nookies from 'nookies';
 import { verifyIdToken } from '../utils/firebaseAdmin';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
-import { UserData } from '../lib/dbTypes';
+import { Reservation, UserData } from '../lib/dbTypes';
 
 type FormData = {
   firstName: string;
@@ -37,25 +43,32 @@ type FormData = {
 };
 
 type UserPageProps = {
-  serverUserData: DocumentData;
+  serverUserDataJSON: string;
   userPath: string;
+  reservationsJSON: string;
 };
 
-const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
+const UserPage = ({
+  serverUserDataJSON,
+  userPath,
+  reservationsJSON,
+}: UserPageProps) => {
+  console.log('RE-RENDERED USER PAGE');
+
+  const serverUserData: UserData = JSON.parse(serverUserDataJSON);
+  const reservations: Reservation[] = JSON.parse(reservationsJSON);
+
   const { user } = useAuth();
 
   const userRef = useRef<DocumentReference<DocumentData> | null>(null);
-  const [realtimeUserData] = useDocumentData(userRef.current);
-
-  console.log('RE-RENDERED USER PAGE');
-
   useEffect(() => {
     if (user) {
       userRef.current = doc(db, 'users', user.uid);
     }
   }, [user]);
+  const [realtimeUserData] = useDocumentData(userRef.current);
 
-  const userData = realtimeUserData || serverUserData;
+  const userData = (realtimeUserData as UserData) || serverUserData;
 
   const {
     uid,
@@ -69,20 +82,14 @@ const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
     reviews,
     rides,
   } = {
-    ...(userData as UserData),
+    ...userData,
     birthday: userData.birthday
-      ? typeof userData.birthday === 'number'
-        ? new Date(userData.birthday)
-        : userData.birthday.toDate()
+      ? new Date(userData.birthday.seconds * 1000)
       : null,
-    createdAt:
-      typeof userData.createdAt === 'number'
-        ? new Date(userData.createdAt)
-        : userData.createdAt.toDate(),
+    createdAt: new Date(userData.createdAt.seconds * 1000),
     city: userData.city || 'Unknown',
     aboutMe: userData.aboutMe || '',
   };
-  // console.log(userDetails);
   const {
     register,
     handleSubmit,
@@ -113,10 +120,7 @@ const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
     if (data.profilePicture && data.profilePicture.length > 0) {
       const photoRef = ref(
         profilePictures,
-        `${uid}.${
-          // data.profilePicture[0].type === 'image/png' ? 'png' : 'jpg'
-          data.profilePicture[0].type.split('/')[1]
-        }`,
+        `${uid}.${data.profilePicture[0].type.split('/')[1]}`,
       );
       const uploadTask = await uploadBytes(photoRef, data.profilePicture[0]);
       newPhotoURL = await getDownloadURL(uploadTask.ref);
@@ -140,8 +144,6 @@ const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
     setLoading(false);
     setEditMode(false);
   };
-
-  // console.log(user);
 
   return (
     <>
@@ -385,10 +387,52 @@ const UserPage = ({ serverUserData, userPath }: UserPageProps) => {
                 </div>
               </div>
             </div>
-            <div className="mt-3 w-full rounded-md bg-accentBlue/10 p-3 lg:col-start-2 lg:col-end-3 lg:row-start-2 lg:row-end-4 lg:mt-0 lg:rounded-3xl">
-              <div className="w-full text-center text-2xl font-bold">
-                No pending reservations.
-              </div>
+            <div className="mt-3 flex w-full flex-col gap-2 rounded-md bg-accentBlue/10 p-2 lg:col-start-2 lg:col-end-3 lg:row-start-2 lg:row-end-4 lg:mt-0 lg:rounded-3xl">
+              {reservations.length > 0 ? (
+                <div className="w-full text-center text-2xl font-bold">
+                  Upcoming reservations.
+                </div>
+              ) : (
+                <div className="w-full text-center text-2xl font-bold">
+                  No pending reservations.
+                </div>
+              )}
+              {reservations.map((res) => {
+                return (
+                  <div
+                    key={res.id}
+                    className="flex w-full flex-col rounded-md bg-accentBlue/10 p-3 tracking-tighter lg:rounded-3xl xl:p-6"
+                  >
+                    <div className="text-center">
+                      <div>
+                        Bike: <span className="font-bold">{res.bikeModel}</span>
+                      </div>
+                      <div>
+                        At: <span className="font-bold">{res.location}</span>
+                      </div>
+                    </div>
+
+                    <div className="divider my-1"></div>
+
+                    <div className="flex justify-between text-sm">
+                      <div>
+                        From:{' '}
+                        {new Intl.DateTimeFormat(undefined, {
+                          dateStyle: 'medium',
+                          timeStyle: 'short',
+                        }).format(new Date(res.startDate.seconds * 1000))}
+                      </div>
+                      <div>
+                        To:{' '}
+                        {new Intl.DateTimeFormat(undefined, {
+                          dateStyle: 'medium',
+                          timeStyle: 'short',
+                        }).format(new Date(res.endDate.seconds * 1000))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
             <div className="mt-3 w-full rounded-md bg-accentBlue/10 p-3 lg:col-start-3 lg:col-end-4 lg:row-start-1 lg:row-end-3 lg:mt-0 lg:rounded-3xl lg:p-6">
               <div className="stats stats-vertical h-full w-full bg-accentBlue tracking-normal text-offWhite shadow lg:rounded-3xl">
@@ -450,20 +494,56 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const token = await verifyIdToken(cookies.token);
     const { uid } = token;
 
-    const docRef = doc(db, 'users', uid);
-    const docSnap = await getDoc(docRef);
-    const data = docSnap.data();
+    const userRef = doc(db, 'users', uid);
+
+    const [resSnap, userSnap] = await Promise.all([
+      getDocs(
+        query(
+          collectionGroup(db, 'reservations'),
+          where('uid', '==', uid),
+          where('startDate', '>', Timestamp.fromDate(new Date())),
+          limit(3),
+        ),
+      ),
+      getDoc(userRef),
+    ]);
+
+    const userData: UserData = userSnap.data() as UserData;
+
+    const reservations: Reservation[] = [];
+    resSnap.forEach((res) => {
+      reservations.push({
+        id: res.id,
+        uid: res.data().uid,
+        startDate: res.data().startDate,
+        endDate: res.data().endDate,
+        bikeModel: res.data().bikeModel,
+        location: res.data().location,
+      });
+    });
+
+    console.log(
+      'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA SSR UserData: ',
+      userData,
+    );
+    console.log(
+      'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA SSR Reservations: ',
+      reservations,
+    );
 
     return {
       props: {
-        serverUserData: userToJSON(data),
-        userPath: docRef.path,
+        // serverUserData: userToJSON(userData),
+        serverUserDataJSON: JSON.stringify(userData),
+        userPath: userRef.path,
+        reservationsJSON: JSON.stringify(reservations),
       },
     };
   } catch (err) {
+    console.log(err);
     context.res.writeHead(302, { location: '/' });
     context.res.end();
-    return { props: [] };
+    return { props: {} };
   }
 };
 

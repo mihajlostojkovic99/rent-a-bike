@@ -108,13 +108,16 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
   const [trying, setTrying] = useState(false);
 
   const handleProceed = async () => {
+    if (!(typeof locationId === 'string')) return;
+
     setTrying(true);
 
-    const [stockSnap, reservationsSnap] = await Promise.all([
-      await getDoc(doc(db, 'stock', `${bike.id}_${locationId}`)),
-      await getDocs(
+    const [stockSnap, reservationsSnap, locationSnap] = await Promise.all([
+      getDoc(doc(db, 'stock', `${bike.id}_${locationId}`)),
+      getDocs(
         collection(db, 'stock', `${bike.id}_${locationId}`, 'reservations'),
       ),
+      getDoc(doc(db, 'locations', locationId)),
     ]);
     const bikeTotal = stockSnap.data()?.total;
     console.log('Bike total: ', bikeTotal);
@@ -123,9 +126,11 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
     reservationsSnap.forEach((res) => {
       reservations.push({
         id: res.id,
-        userId: res.data().userId,
+        uid: res.data().uid,
         startDate: res.data().startDate,
         endDate: res.data().endDate,
+        bikeModel: res.data().bikeModel,
+        location: res.data().location,
       });
     });
     console.log('Fetched reservations: ', reservations);
@@ -152,9 +157,13 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
         collection(db, 'stock', `${bike.id}_${locationId}`, 'reservations'),
 
         {
-          userId: user?.uid,
+          uid: user?.uid,
           startDate: Timestamp.fromDate(rentInterval.start as Date),
           endDate: Timestamp.fromDate(rentInterval.end as Date),
+          bikeModel: `${bike.brand} ${bike.model} ${bike.year}`,
+          location: `${locationSnap.data()?.place}, ${
+            locationSnap.data()?.city
+          }`,
         },
       );
       console.log('Reservation created');

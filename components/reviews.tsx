@@ -35,7 +35,7 @@ const Reviews = ({ bike }: CommentsProps) => {
             id: reviewRef.id,
             displayName: reviewRef.data().displayName,
             photoURL: reviewRef.data().photoURL,
-            userId: reviewRef.data().userId,
+            uid: reviewRef.data().uid,
             rating: reviewRef.data().rating,
             text: reviewRef.data().text,
           });
@@ -72,7 +72,7 @@ const Reviews = ({ bike }: CommentsProps) => {
               <div className="flex flex-col justify-between">
                 <div>
                   <div className="text-lg font-bold">
-                    <Link href={`/users/${review.userId}`}>
+                    <Link href={`/users/${review.uid}`}>
                       <a className="underline">{review.displayName} </a>
                     </Link>
                     left a review
