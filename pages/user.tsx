@@ -390,7 +390,7 @@ const UserPage = ({
             <div className="mt-3 flex w-full flex-col gap-2 rounded-md bg-accentBlue/10 p-2 lg:col-start-2 lg:col-end-3 lg:row-start-2 lg:row-end-4 lg:mt-0 lg:rounded-3xl">
               {reservations.length > 0 ? (
                 <div className="w-full text-center text-2xl font-bold">
-                  Upcoming reservations.
+                  My reservations
                 </div>
               ) : (
                 <div className="w-full text-center text-2xl font-bold">
@@ -405,16 +405,22 @@ const UserPage = ({
                   >
                     <div className="text-center">
                       <div>
-                        Bike: <span className="font-bold">{res.bikeModel}</span>
+                        Bike:{' '}
+                        <span className="font-bold text-accentBlue">
+                          {res.bikeModel}
+                        </span>
                       </div>
                       <div>
-                        At: <span className="font-bold">{res.location}</span>
+                        At:{' '}
+                        <span className="font-bold text-accentBlue">
+                          {res.location}
+                        </span>
                       </div>
                     </div>
 
                     <div className="divider my-1"></div>
 
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm text-justBlack/50">
                       <div>
                         From:{' '}
                         {new Intl.DateTimeFormat(undefined, {
