@@ -6,12 +6,14 @@ import { bikeTypes } from '../lib/bikeTypes';
 import { Bike, Review } from '../lib/dbTypes';
 import { db } from '../utils/firebase';
 import Avatar from './avatar';
+import cx from 'classnames';
 
 type CommentsProps = {
   bike: Bike;
+  className?: string;
 };
 
-const Reviews = ({ bike }: CommentsProps) => {
+const Reviews = ({ bike, className }: CommentsProps) => {
   const [reviews, setReviews] = useState<Review[]>([]);
 
   // console.log(reviews);
@@ -45,10 +47,15 @@ const Reviews = ({ bike }: CommentsProps) => {
       }
     };
     fetchReviews();
-  }, []);
+  }, [bike.id, bike.type]);
 
   return (
-    <div className="flex w-full flex-col rounded-md bg-accentBlue/10 p-3 lg:h-full lg:rounded-3xl xl:p-6">
+    <div
+      className={cx(
+        'flex w-full flex-col rounded-md bg-accentBlue/10 p-3 lg:h-full lg:rounded-3xl xl:p-6',
+        className,
+      )}
+    >
       <div className="w-full text-center text-3xl font-extrabold tracking-tighter">
         Reviews
       </div>

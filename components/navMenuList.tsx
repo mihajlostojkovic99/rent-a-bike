@@ -37,12 +37,12 @@ const NavMenuList = () => {
           </Link>
         </li>
         <li>
-          <Link href="">
+          <Link href="/admin/locations">
             <a>Locations</a>
           </Link>
         </li>
         <li>
-          <Link href="">
+          <Link href="/admin/employees">
             <a>Employees</a>
           </Link>
         </li>

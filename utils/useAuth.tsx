@@ -16,11 +16,12 @@ import {
   GoogleAuthProvider,
 } from 'firebase/auth';
 import nookies from 'nookies';
-import { auth, db, firebase } from './firebase';
+import { auth, db, firebase, storage } from './firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import Router, { useRouter } from 'next/router';
 import { deleteDoc, doc, DocumentData, onSnapshot } from 'firebase/firestore';
 import { UserData } from '../lib/dbTypes';
+import { deleteObject, ref } from 'firebase/storage';
 
 type Auth = {
   user: FirebaseUser | null | undefined;
@@ -99,7 +100,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   async function deleteAccount(password: string) {
     if (user && user.email) {
-      await deleteDoc(doc(db, 'users', user.uid));
+      await Promise.all([
+        deleteDoc(doc(db, 'users', user.uid)),
+        deleteObject(ref(storage, `profilePictures/${user.uid}.jpeg`)),
+        deleteObject(ref(storage, `profilePictures/${user.uid}.jpg`)),
+        deleteObject(ref(storage, `profilePictures/${user.uid}.png`)),
+      ]);
       const cred = EmailAuthProvider.credential(user.email, password);
       await reauthenticateWithCredential(user, cred);
       deleteUser(user).then(() => {

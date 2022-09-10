@@ -32,6 +32,7 @@ module.exports = {
           'accent': '#008CEE',
           'neutral': '#E3E3E3',
           'base-100': '#ffffff',
+          'warning': '#820000',
         },
         dangertheme: {
           'primary': '#E3E3E3',

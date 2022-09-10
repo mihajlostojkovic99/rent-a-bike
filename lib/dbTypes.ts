@@ -28,11 +28,17 @@ export type UserData = {
   isAdmin: boolean;
 };
 
+export type EmployeeData = {
+  uid: string;
+  displayName: string;
+  isAdmin: boolean;
+};
+
 export type Bike = {
   id: string;
   brand: string | null;
   model: string | null;
-  pricePerHour: number | null;
+  pricePerHour: number;
   year: number | null;
   type: string | null;
   speeds: number | null;

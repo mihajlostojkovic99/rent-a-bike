@@ -11,6 +11,7 @@ import {
   setDoc,
   Timestamp,
   where,
+  writeBatch,
 } from 'firebase/firestore';
 import { GetStaticProps, NextPage } from 'next';
 import Image from 'next/image';
@@ -25,7 +26,13 @@ import { PulseLoader } from 'react-spinners';
 import MyDateTimePicker from '../../components/myDateTimePicker';
 import { muiTheme } from '../../utils/datePicker';
 import Reviews from '../../components/reviews';
-import { areIntervalsOverlapping, Interval } from 'date-fns';
+import {
+  areIntervalsOverlapping,
+  differenceInDays,
+  differenceInMinutes,
+  Interval,
+  subDays,
+} from 'date-fns';
 import cx from 'classnames';
 import { useAuth } from '../../utils/useAuth';
 
@@ -85,7 +92,7 @@ type BikePageProps = {
 };
 
 const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const router = useRouter();
   const locationId = router.query.locationId;
 
@@ -98,12 +105,34 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
       : new Date(),
   });
 
-  console.log('Rent interval is: ', rentInterval);
+  // console.log('Rent interval is: ', rentInterval);
 
   const [helmet, setHelmet] = useState(false);
   const [childSeat, setChildSeat] = useState(false);
 
-  const [total, setTotal] = useState(bike.pricePerHour);
+  const calcPrice = () => {
+    const pph = bike.pricePerHour + (helmet ? 1 : 0) + (childSeat ? 5 : 0);
+    const numOfDays = differenceInDays(rentInterval.end, rentInterval.start);
+    const daysPrice = numOfDays * pph * 7;
+    const remainder = subDays(rentInterval.end, numOfDays);
+    const restPrice =
+      (differenceInMinutes(remainder, rentInterval.start) / 60) * pph;
+    // console.log('numOfDays is: ', numOfDays);
+    // console.log('Price for those days is: ', daysPrice);
+    // console.log(
+    //   'Remaining number of hours is: ',
+    //   differenceInMinutes(remainder, rentInterval.start) / 60,
+    // );
+    // console.log('Price for those hours is: ', restPrice);
+    // console.log('Total should be: ', daysPrice + restPrice);
+    return daysPrice + restPrice;
+  };
+
+  const [total, setTotal] = useState<number>(calcPrice());
+
+  useEffect(() => {
+    setTotal(calcPrice());
+  }, [rentInterval, helmet, childSeat]);
 
   const [trying, setTrying] = useState(false);
 
@@ -151,22 +180,33 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
 
     if (parallelReservations >= bikeTotal) {
       console.log('NO AVAILABLE BIKE AT THAT TIME-FRAME');
-    } else {
+    } else if (userData?.balance && userData?.balance > total) {
       console.log('ALL OK, SHOULD MAKE A RESERVATION');
-      await addDoc(
-        collection(db, 'stock', `${bike.id}_${locationId}`, 'reservations'),
+      await Promise.all([
+        setDoc(
+          doc(db, 'users', userData.uid),
+          {
+            balance: userData.balance - total,
+          },
+          { merge: true },
+        ),
+        addDoc(
+          collection(db, 'stock', `${bike.id}_${locationId}`, 'reservations'),
 
-        {
-          uid: user?.uid,
-          startDate: Timestamp.fromDate(rentInterval.start as Date),
-          endDate: Timestamp.fromDate(rentInterval.end as Date),
-          bikeModel: `${bike.brand} ${bike.model} ${bike.year}`,
-          location: `${locationSnap.data()?.place}, ${
-            locationSnap.data()?.city
-          }`,
-        },
-      );
+          {
+            uid: user?.uid,
+            startDate: Timestamp.fromDate(rentInterval.start as Date),
+            endDate: Timestamp.fromDate(rentInterval.end as Date),
+            bikeModel: `${bike.brand} ${bike.model} ${bike.year}`,
+            location: `${locationSnap.data()?.place}, ${
+              locationSnap.data()?.city
+            }`,
+          },
+        ),
+      ]);
       console.log('Reservation created');
+    } else {
+      console.log('NOT ENOUGH FUNDS');
     }
 
     setTrying(false);
@@ -266,7 +306,9 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
                     checked={helmet}
                     onChange={() => setHelmet(!helmet)}
                   />
-                  <span>Helmet</span>
+                  <span>
+                    Helmet <span className="text-justBlack/40">($1/h)</span>
+                  </span>
                 </label>
 
                 <label className="label mt-5 mb-2 ml-1 cursor-pointer justify-start p-0 lg:mt-0">
@@ -278,11 +320,13 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
                     checked={childSeat}
                     onChange={() => setChildSeat(!childSeat)}
                   />
-                  <span>Child seat</span>
+                  <span>
+                    Child seat <span className="text-justBlack/40">($5/h)</span>
+                  </span>
                 </label>
               </div>
               <div className="text-2xl font-extrabold tracking-tighter">
-                Total: ${total}
+                Total: ${total.toFixed(2)}
               </div>
               <button
                 className={cx(
@@ -296,7 +340,7 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
                 Proceed
               </button>
             </div>
-            <Reviews bike={bike} />
+            <Reviews bike={bike} className="mt-4" />
           </div>
         </div>
       </div>
