@@ -1,9 +1,8 @@
-import AsyncSelect from 'react-select/async';
 import Select from 'react-select';
-import { Bike, Location } from '../../lib/dbTypes';
+import { Location } from '../../lib/dbTypes';
 import cx from 'classnames';
-import { useEffect, useRef, useState } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
 import { useForm } from 'react-hook-form';
 

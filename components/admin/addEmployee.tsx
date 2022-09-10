@@ -15,7 +15,6 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
 import { useForm } from 'react-hook-form';
-import EmployeeRow from './employeeRow';
 import { useAuth } from '../../utils/useAuth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { updateProfile } from 'firebase/auth';

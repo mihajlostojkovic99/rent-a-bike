@@ -1,8 +1,7 @@
-import AsyncSelect from 'react-select/async';
 import Select from 'react-select';
 import { Bike, Location } from '../../lib/dbTypes';
 import cx from 'classnames';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
 

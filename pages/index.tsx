@@ -50,7 +50,30 @@ const Index: NextPage = () => {
             </div>
           </div>
           <Searchbox className="mx-1 mt-32 lg:mx-auto lg:mt-48 "></Searchbox>
-          <div className="mt-8 h-96 w-full"></div>
+          {/* <div className="mt-8 h-96 w-full"></div> */}
+          <div className="mx-auto mt-8 flex max-w-7xl flex-col items-start">
+            <div className="max-w-xl">
+              <h1 className="text-4xl font-extrabold">How it works</h1>
+              <div className="mt-4">
+                First, you choose where and how long you want to rent and then
+                choose a bike that suits your needs from our diverse stock.
+                After that, you can additionally choose some add-ons such as a
+                helmet and/or a child seat and reserve it by paying in advance.
+                After the rent period ends, on your next login, you will be
+                asked to leave a review and a rating for that bike if it was
+                your first time renting it. And that is it. Happy renting! 😀
+              </div>
+            </div>
+            <div className="my-4 max-w-xl self-end">
+              <h1 className="text-4xl font-extrabold">Pricing</h1>
+              <div className="mt-4">
+                The price is calculated on per hour basis if the rent duration
+                is under a day. For periods over a day, the daily price is
+                calculated as if renting the bike for 7 hours per day and the
+                remainder is calculated on a per hour basis.
+              </div>
+            </div>
+          </div>
         </div>
       </Layout>
     );

@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import { useAuth } from '../utils/useAuth';
+import Footer from './footer';
 import Navbar from './navbar';
 import NavMenuList from './navMenuList';
 
@@ -16,7 +17,7 @@ const Layout = ({ children }: LayoutProps) => {
         <Head>
           <title>GoBike Admin</title>
         </Head>
-        <div className="drawer drawer-mobile">
+        <div className="drawer-mobile drawer">
           <input id="my-drawer" type="checkbox" className="drawer-toggle" />
           <div className="drawer-content relative z-20 overflow-x-hidden">
             <Navbar />
@@ -46,6 +47,7 @@ const Layout = ({ children }: LayoutProps) => {
         <div className="drawer-content relative z-20 overflow-x-hidden">
           <Navbar />
           <main>{children}</main>
+          <Footer />
         </div>
         <div className="drawer-side lg:hidden">
           <label

@@ -9,9 +9,7 @@ import { AuthProvider } from '../utils/useAuth';
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Component {...pageProps} />
-      </LocalizationProvider>
+      <Component {...pageProps} />
     </AuthProvider>
   );
 }

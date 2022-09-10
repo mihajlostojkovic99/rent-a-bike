@@ -1,7 +1,11 @@
 import cx from 'classnames';
 import type {} from '@mui/x-date-pickers/themeAugmentation';
 import { TextField } from '@mui/material';
-import { DateTimePicker, TimePicker } from '@mui/x-date-pickers';
+import {
+  DateTimePicker,
+  LocalizationProvider,
+  TimePicker,
+} from '@mui/x-date-pickers';
 import { ThemeProvider } from '@mui/material/styles';
 import { muiTheme as theme } from '../utils/datePicker';
 import { useRef, useState } from 'react';
@@ -12,6 +16,8 @@ import { db } from '../utils/firebase';
 import SearchResults from './searchResult';
 import { bikeTypes } from '../lib/bikeTypes';
 import MyDateTimePicker from './myDateTimePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import MyTimePicker from './myTimePicker';
 
 type SearchboxProps = {
   className?: string;
@@ -160,24 +166,13 @@ const Searchbox = ({ className, children }: SearchboxProps) => {
               <span>Same day return</span>
             </label>
             {sameDayReturn ? (
-              <ThemeProvider theme={theme}>
-                <TimePicker
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      size="small"
-                      className="w-full tracking-tight lg:w-52"
-                    />
-                  )}
-                  value={endTime}
-                  onChange={(newValue) => {
-                    setEndTime(newValue);
-                  }}
-                  minTime={startTime}
-                  minutesStep={5}
-                  ampm={false}
-                />
-              </ThemeProvider>
+              <MyTimePicker
+                value={endTime}
+                onChange={(newValue) => {
+                  setEndTime(newValue);
+                }}
+                theme={theme}
+              />
             ) : (
               <MyDateTimePicker
                 value={endTime}
