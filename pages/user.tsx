@@ -22,7 +22,11 @@ import {
   where,
 } from 'firebase/firestore';
 import cx from 'classnames';
-import { differenceInDays, differenceInYears } from 'date-fns';
+import {
+  differenceInDays,
+  differenceInYears,
+  isWithinInterval,
+} from 'date-fns';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import PasswordPopup from '../components/passwordPopup';
@@ -401,7 +405,15 @@ const UserPage = ({
                 return (
                   <div
                     key={res.id}
-                    className="flex w-full flex-col rounded-md bg-accentBlue/10 p-3 tracking-tighter lg:rounded-3xl xl:p-6"
+                    className={cx(
+                      'flex w-full flex-col rounded-md bg-accentBlue/10 p-3 tracking-tighter lg:rounded-3xl xl:p-6',
+                      {
+                        'bg-electricGreen/20': isWithinInterval(new Date(), {
+                          start: new Date(res.startDate.seconds * 1000),
+                          end: new Date(res.endDate.seconds * 1000),
+                        }),
+                      },
+                    )}
                   >
                     <div className="text-center">
                       <div>
@@ -507,7 +519,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         query(
           collectionGroup(db, 'reservations'),
           where('uid', '==', uid),
-          where('startDate', '>', Timestamp.fromDate(new Date())),
+          where('endDate', '>', Timestamp.fromDate(new Date())),
           limit(3),
         ),
       ),
@@ -525,6 +537,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         endDate: res.data().endDate,
         bikeModel: res.data().bikeModel,
         location: res.data().location,
+        bikeId: res.data().bikeId,
       });
     });
 

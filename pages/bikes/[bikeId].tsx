@@ -160,6 +160,7 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
         endDate: res.data().endDate,
         bikeModel: res.data().bikeModel,
         location: res.data().location,
+        bikeId: res.data().bikeId,
       });
     });
     console.log('Fetched reservations: ', reservations);
@@ -201,6 +202,7 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
             location: `${locationSnap.data()?.place}, ${
               locationSnap.data()?.city
             }`,
+            bikeId: bike.id,
           },
         ),
       ]);
@@ -329,13 +331,13 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
                 Total: ${total.toFixed(2)}
               </div>
               <button
-                className={cx(
-                  'btn btn-accent btn-wide h-full text-3xl normal-case',
-                  {
-                    loading: trying,
-                  },
-                )}
+                className={cx('btn  btn-wide h-full text-3xl normal-case', {
+                  'loading': trying,
+                  'btn-accent': locationId !== undefined,
+                  'btn-disabled': !locationId,
+                })}
                 onClick={handleProceed}
+                // disabled={locationId ? false : true}
               >
                 Proceed
               </button>

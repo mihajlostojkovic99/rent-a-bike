@@ -71,6 +71,9 @@ const NavMenuList = () => {
         </Link>
       </li>
       <li>
+        <a className="text-electricGreen">Pending review</a>
+      </li>
+      <li>
         <a
           onClick={() => {
             logout().then(() => Router.push('/'));

@@ -9,7 +9,7 @@ type LayoutProps = {
 };
 
 const Layout = ({ children }: LayoutProps) => {
-  const { userData } = useAuth();
+  const { user, userData } = useAuth();
 
   if (userData?.isAdmin) {
     return (
@@ -47,7 +47,7 @@ const Layout = ({ children }: LayoutProps) => {
         <div className="drawer-content relative z-20 overflow-x-hidden">
           <Navbar />
           <main>{children}</main>
-          <Footer />
+          {userData && <Footer />}
         </div>
         <div className="drawer-side lg:hidden">
           <label

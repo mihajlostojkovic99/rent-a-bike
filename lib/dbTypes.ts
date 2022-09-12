@@ -45,7 +45,7 @@ export type Bike = {
   brakes: string | null;
   photoURL: string | null;
   isElectric: boolean | null;
-  rating: number | null;
+  rating: number;
 };
 
 export type Location = {
@@ -73,6 +73,7 @@ export type Review = {
 export type Reservation = {
   id: string;
   uid: string;
+  bikeId: string;
   startDate: Timestamp;
   endDate: Timestamp;
   bikeModel: string;
