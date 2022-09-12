@@ -24,12 +24,13 @@ import { useRouter } from 'next/router';
 
 type ReviewsProps = {
   bike: Bike;
+  reviews: Review[];
   className?: string;
 };
 
-const Reviews = ({ bike, className }: ReviewsProps) => {
+const Reviews = ({ bike, reviews, className }: ReviewsProps) => {
   const { user, userData } = useAuth();
-  const [reviews, setReviews] = useState<Review[]>([]);
+  // const [reviews, setReviews] = useState<Review[]>([]);
 
   const [canReview, setCanReview] = useState<
     'not rented' | 'already reviewed' | 'can review'
@@ -57,27 +58,27 @@ const Reviews = ({ bike, className }: ReviewsProps) => {
           ),
         );
 
-        const reviewsSnap = await getDocs(
-          collection(db, 'bikes', type.value, 'models', bike.id, 'reviews'),
-        );
+        // const reviewsSnap = await getDocs(
+        //   collection(db, 'bikes', type.value, 'models', bike.id, 'reviews'),
+        // );
 
-        const tmpReviews: Review[] = [];
+        // const tmpReviews: Review[] = [];
 
-        reviewsSnap.forEach((reviewRef) => {
-          tmpReviews.push({
-            id: reviewRef.id,
-            displayName: reviewRef.data().displayName,
-            photoURL: reviewRef.data().photoURL,
-            uid: reviewRef.data().uid,
-            rating: reviewRef.data().rating,
-            text: reviewRef.data().text,
-          });
-        });
+        // reviewsSnap.forEach((reviewRef) => {
+        //   tmpReviews.push({
+        //     id: reviewRef.id,
+        //     displayName: reviewRef.data().displayName,
+        //     photoURL: reviewRef.data().photoURL,
+        //     uid: reviewRef.data().uid,
+        //     rating: reviewRef.data().rating,
+        //     text: reviewRef.data().text,
+        //   });
+        // });
 
         if (reservationSnap.empty) setCanReview('not rented');
         if (
           !reservationSnap.empty &&
-          tmpReviews.find((review) => {
+          reviews.find((review) => {
             if (review.uid === user.uid) return true;
             else return false;
           })
@@ -87,7 +88,7 @@ const Reviews = ({ bike, className }: ReviewsProps) => {
 
         if (
           !reservationSnap.empty &&
-          !tmpReviews.find((review) => {
+          !reviews.find((review) => {
             if (review.uid === user.uid) return true;
             else return false;
           })
@@ -95,12 +96,12 @@ const Reviews = ({ bike, className }: ReviewsProps) => {
           setCanReview('can review');
         }
 
-        setReviews(tmpReviews);
+        // setReviews(tmpReviews);
       }
     };
     fetchReviews();
     console.log('useEffect called');
-  }, [bike, type, user]);
+  }, [bike, reviews, type, user]);
 
   const router = useRouter();
 
@@ -109,25 +110,6 @@ const Reviews = ({ bike, className }: ReviewsProps) => {
     setUploading(true);
 
     await Promise.all([
-      // runTransaction(db, async (transaction) => {
-      //   const bikeRef = doc(
-      //     db,
-      //     'bikes',
-      //     bikeTypes.find((type) => {
-      //       if (type.label === bike.type) return true;
-      //       else return false;
-      //     })!.value,
-      //     'models',
-      //     bike.id,
-      //   );
-      //   const bikeSnap = await transaction.get(bikeRef);
-
-      //   const newRating =
-      //     (bikeSnap.data()?.rating + rating) / (reviews.length + 1);
-      //   transaction.update(bikeRef, {
-      //     rating: newRating,
-      //   });
-      // }),
       setDoc(
         doc(
           db,

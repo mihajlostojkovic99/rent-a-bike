@@ -40,7 +40,7 @@ export type Bike = {
   model: string | null;
   pricePerHour: number;
   year: number | null;
-  type: string | null;
+  type: string;
   speeds: number | null;
   brakes: string | null;
   photoURL: string | null;

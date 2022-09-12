@@ -17,7 +17,7 @@ import { GetStaticProps, NextPage } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import Layout from '../../components/layout';
-import { Bike, Location, Reservation } from '../../lib/dbTypes';
+import { Bike, Location, Reservation, Review } from '../../lib/dbTypes';
 import { db } from '../../utils/firebase';
 import { useEffect, useState } from 'react';
 import { loadLocations } from '../../components/searchbox';
@@ -35,6 +35,7 @@ import {
 } from 'date-fns';
 import cx from 'classnames';
 import { useAuth } from '../../utils/useAuth';
+import { bikeTypeMap, bikeTypes } from '../../lib/bikeTypes';
 
 export async function getStaticPaths() {
   const querySnap = await getDocs(collectionGroup(db, 'models'));
@@ -51,6 +52,14 @@ export async function getStaticPaths() {
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const bikeId = params?.bikeId;
+  if (typeof bikeId !== 'string') {
+    return {
+      redirect: {
+        destination: '/',
+      },
+      props: {},
+    };
+  }
   const q = query(
     collectionGroup(db, 'models'),
     where('id', '==', bikeId),
@@ -60,9 +69,39 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const querySnap = await getDocs(q);
   const bikeData = querySnap.docs[0].data() as Bike;
 
+  const typeLabel = bikeData.type;
+
+  const reviewsSnap = await getDocs(
+    collection(
+      db,
+      'bikes',
+      bikeTypes.find((type) => {
+        if (type.label === typeLabel) return true;
+        else return false;
+      })!.value,
+      'models',
+      bikeId,
+      'reviews',
+    ),
+  );
+
+  const reviews: Review[] = [];
+
+  reviewsSnap.forEach((reviewRef) => {
+    reviews.push({
+      id: reviewRef.id,
+      displayName: reviewRef.data().displayName,
+      photoURL: reviewRef.data().photoURL,
+      uid: reviewRef.data().uid,
+      rating: reviewRef.data().rating,
+      text: reviewRef.data().text,
+    });
+  });
+
   return {
     props: {
       bike: bikeData,
+      reviews: reviews,
     },
   };
 };
@@ -89,9 +128,13 @@ export const selectStylesGray = {
 
 type BikePageProps = {
   bike: Bike;
+  reviews: Review[];
 };
 
-const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
+const BikePage: NextPage<BikePageProps> = ({
+  bike,
+  reviews,
+}: BikePageProps) => {
   const { user, userData } = useAuth();
   const router = useRouter();
   const locationId = router.query.locationId;
@@ -342,7 +385,7 @@ const BikePage: NextPage<BikePageProps> = ({ bike }: BikePageProps) => {
                 Proceed
               </button>
             </div>
-            <Reviews bike={bike} className="mt-4" />
+            <Reviews bike={bike} reviews={reviews} className="mt-4" />
           </div>
         </div>
       </div>
