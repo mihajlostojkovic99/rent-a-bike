@@ -38,9 +38,6 @@ type MyTimePickerProps = {
 };
 
 const MyTimePicker = ({ value, onChange, theme }: MyTimePickerProps) => {
-  // const value = new Date();
-  // const onChange = () => {};
-
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <ThemeProvider theme={theme}>

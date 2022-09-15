@@ -47,7 +47,7 @@ const Layout = ({ children }: LayoutProps) => {
         <div className="drawer-content relative z-20 overflow-x-hidden">
           <Navbar />
           <main>{children}</main>
-          {userData && <Footer />}
+          {user !== undefined && <Footer />}
         </div>
         <div className="drawer-side lg:hidden">
           <label

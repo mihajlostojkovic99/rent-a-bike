@@ -7,6 +7,7 @@ import {
   getDoc,
   getDocs,
   limit,
+  orderBy,
   query,
   setDoc,
   Timestamp,
@@ -20,12 +21,9 @@ import Layout from '../../components/layout';
 import { Bike, Location, Reservation, Review } from '../../lib/dbTypes';
 import { db } from '../../utils/firebase';
 import { useEffect, useState } from 'react';
-import { loadLocations } from '../../components/searchbox';
-import Select from 'react-select/';
-import { PulseLoader } from 'react-spinners';
 import MyDateTimePicker from '../../components/myDateTimePicker';
 import { muiTheme } from '../../utils/datePicker';
-import Reviews from '../../components/reviews';
+import Reviews from '../../components/bikeReviews';
 import {
   areIntervalsOverlapping,
   differenceInDays,
@@ -72,16 +70,19 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const typeLabel = bikeData.type;
 
   const reviewsSnap = await getDocs(
-    collection(
-      db,
-      'bikes',
-      bikeTypes.find((type) => {
-        if (type.label === typeLabel) return true;
-        else return false;
-      })!.value,
-      'models',
-      bikeId,
-      'reviews',
+    query(
+      collection(
+        db,
+        'bikes',
+        bikeTypes.find((type) => {
+          if (type.label === typeLabel) return true;
+          else return false;
+        })!.value,
+        'models',
+        bikeId,
+        'reviews',
+      ),
+      orderBy('createdAt', 'desc'),
     ),
   );
 
@@ -95,13 +96,14 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       uid: reviewRef.data().uid,
       rating: reviewRef.data().rating,
       text: reviewRef.data().text,
+      createdAt: reviewRef.data().createdAt,
     });
   });
 
   return {
     props: {
       bike: bikeData,
-      reviews: reviews,
+      reviewsJSON: JSON.stringify(reviews),
     },
   };
 };
@@ -128,16 +130,17 @@ export const selectStylesGray = {
 
 type BikePageProps = {
   bike: Bike;
-  reviews: Review[];
+  reviewsJSON: string;
 };
 
 const BikePage: NextPage<BikePageProps> = ({
   bike,
-  reviews,
+  reviewsJSON,
 }: BikePageProps) => {
   const { user, userData } = useAuth();
   const router = useRouter();
   const locationId = router.query.locationId;
+  const reviews: Review[] = JSON.parse(reviewsJSON);
 
   const [rentInterval, setRentInterval] = useState<Interval>({
     start: router.query.startTime
@@ -160,14 +163,6 @@ const BikePage: NextPage<BikePageProps> = ({
     const remainder = subDays(rentInterval.end, numOfDays);
     const restPrice =
       (differenceInMinutes(remainder, rentInterval.start) / 60) * pph;
-    // console.log('numOfDays is: ', numOfDays);
-    // console.log('Price for those days is: ', daysPrice);
-    // console.log(
-    //   'Remaining number of hours is: ',
-    //   differenceInMinutes(remainder, rentInterval.start) / 60,
-    // );
-    // console.log('Price for those hours is: ', restPrice);
-    // console.log('Total should be: ', daysPrice + restPrice);
     return daysPrice + restPrice;
   };
 
@@ -306,85 +301,88 @@ const BikePage: NextPage<BikePageProps> = ({
                 )}
               </div>
             </div>
-            <div className="mt-8 flex items-center justify-between">
-              <div className="flex w-fit flex-col gap-2">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="font-semibold text-justBlack lg:font-normal">
-                    Pick up time:
+            {locationId && user && (
+              <div className="mt-8 flex items-center justify-between">
+                <div className="flex w-fit flex-col gap-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-semibold text-justBlack lg:font-normal">
+                      Pick up time:
+                    </div>
+                    <MyDateTimePicker
+                      value={rentInterval.start}
+                      onChange={(newValue: Date) => {
+                        newValue.setSeconds(0, 0);
+                        setRentInterval({
+                          start: newValue,
+                          end: rentInterval.end,
+                        });
+                      }}
+                      theme={muiTheme}
+                    />
                   </div>
-                  <MyDateTimePicker
-                    value={rentInterval.start}
-                    onChange={(newValue: Date) => {
-                      newValue.setSeconds(0, 0);
-                      setRentInterval({
-                        start: newValue,
-                        end: rentInterval.end,
-                      });
-                    }}
-                    theme={muiTheme}
-                  />
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <div className="font-semibold text-justBlack lg:font-normal">
-                    Return time:
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-semibold text-justBlack lg:font-normal">
+                      Return time:
+                    </div>
+                    <MyDateTimePicker
+                      value={rentInterval.end}
+                      onChange={(newValue: Date) => {
+                        newValue.setSeconds(0, 0);
+                        setRentInterval({
+                          start: rentInterval.start,
+                          end: newValue,
+                        });
+                      }}
+                      theme={muiTheme}
+                    />
                   </div>
-                  <MyDateTimePicker
-                    value={rentInterval.end}
-                    onChange={(newValue: Date) => {
-                      newValue.setSeconds(0, 0);
-                      setRentInterval({
-                        start: rentInterval.start,
-                        end: newValue,
-                      });
-                    }}
-                    theme={muiTheme}
-                  />
                 </div>
-              </div>
-              <div className="flex h-full flex-col justify-evenly">
-                <label className="label mt-5 mb-2 ml-1 cursor-pointer justify-start p-0 lg:mt-0">
-                  <input
-                    type="checkbox"
-                    className="checkbox checkbox-accent checkbox-sm mr-2"
-                    name="returnDay"
-                    id="returnDay"
-                    checked={helmet}
-                    onChange={() => setHelmet(!helmet)}
-                  />
-                  <span>
-                    Helmet <span className="text-justBlack/40">($1/h)</span>
-                  </span>
-                </label>
+                <div className="flex h-full flex-col justify-evenly">
+                  <label className="label mt-5 mb-2 ml-1 cursor-pointer justify-start p-0 lg:mt-0">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-accent checkbox-sm mr-2"
+                      name="returnDay"
+                      id="returnDay"
+                      checked={helmet}
+                      onChange={() => setHelmet(!helmet)}
+                    />
+                    <span>
+                      Helmet <span className="text-justBlack/40">($1/h)</span>
+                    </span>
+                  </label>
 
-                <label className="label mt-5 mb-2 ml-1 cursor-pointer justify-start p-0 lg:mt-0">
-                  <input
-                    type="checkbox"
-                    className="checkbox checkbox-accent checkbox-sm mr-2"
-                    name="returnDay"
-                    id="returnDay"
-                    checked={childSeat}
-                    onChange={() => setChildSeat(!childSeat)}
-                  />
-                  <span>
-                    Child seat <span className="text-justBlack/40">($5/h)</span>
-                  </span>
-                </label>
+                  <label className="label mt-5 mb-2 ml-1 cursor-pointer justify-start p-0 lg:mt-0">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-accent checkbox-sm mr-2"
+                      name="returnDay"
+                      id="returnDay"
+                      checked={childSeat}
+                      onChange={() => setChildSeat(!childSeat)}
+                    />
+                    <span>
+                      Child seat{' '}
+                      <span className="text-justBlack/40">($5/h)</span>
+                    </span>
+                  </label>
+                </div>
+                <div className="text-2xl font-extrabold tracking-tighter">
+                  Total: ${total.toFixed(2)}
+                </div>
+                <button
+                  className={cx('btn  btn-wide h-full text-3xl normal-case', {
+                    'loading': trying,
+                    'btn-accent': locationId !== undefined,
+                    'btn-disabled': !locationId,
+                  })}
+                  onClick={handleProceed}
+                  // disabled={locationId ? false : true}
+                >
+                  Proceed
+                </button>
               </div>
-              <div className="text-2xl font-extrabold tracking-tighter">
-                Total: ${total.toFixed(2)}
-              </div>
-              <button
-                className={cx('btn  btn-wide h-full text-3xl normal-case', {
-                  'loading': trying,
-                  'btn-accent': locationId !== undefined,
-                  'btn-disabled': !locationId,
-                })}
-                onClick={handleProceed}
-                // disabled={locationId ? false : true}
-              >
-                Proceed
-              </button>
-            </div>
+            )}
             <Reviews bike={bike} reviews={reviews} className="mt-4" />
           </div>
         </div>

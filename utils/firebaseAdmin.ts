@@ -18,3 +18,21 @@ export const verifyIdToken = (token: string) => {
       throw error;
     });
 };
+
+try {
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: 'https://diplomski-2022.firebaseio.com',
+    });
+  }
+} catch (error: any) {
+  if (!/already exists/u.test(error.message)) {
+    console.error(
+      'Firebase admin for API routes initialization error',
+      error.stack,
+    );
+  }
+}
+
+export default admin;

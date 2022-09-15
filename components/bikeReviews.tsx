@@ -10,6 +10,7 @@ import {
   runTransaction,
   setDoc,
   Timestamp,
+  updateDoc,
   where,
 } from 'firebase/firestore';
 import Link from 'next/link';
@@ -21,6 +22,7 @@ import Avatar from './avatar';
 import cx from 'classnames';
 import { useAuth } from '../utils/useAuth';
 import { useRouter } from 'next/router';
+import ReviewComponent from './review';
 
 type ReviewsProps = {
   bike: Bike;
@@ -58,23 +60,6 @@ const Reviews = ({ bike, reviews, className }: ReviewsProps) => {
           ),
         );
 
-        // const reviewsSnap = await getDocs(
-        //   collection(db, 'bikes', type.value, 'models', bike.id, 'reviews'),
-        // );
-
-        // const tmpReviews: Review[] = [];
-
-        // reviewsSnap.forEach((reviewRef) => {
-        //   tmpReviews.push({
-        //     id: reviewRef.id,
-        //     displayName: reviewRef.data().displayName,
-        //     photoURL: reviewRef.data().photoURL,
-        //     uid: reviewRef.data().uid,
-        //     rating: reviewRef.data().rating,
-        //     text: reviewRef.data().text,
-        //   });
-        // });
-
         if (reservationSnap.empty) setCanReview('not rented');
         if (
           !reservationSnap.empty &&
@@ -95,13 +80,10 @@ const Reviews = ({ bike, reviews, className }: ReviewsProps) => {
         ) {
           setCanReview('can review');
         }
-
-        // setReviews(tmpReviews);
       }
     };
     fetchReviews();
-    console.log('useEffect called');
-  }, [bike, reviews, type, user]);
+  }, [bike.id, reviews, type, user]);
 
   const router = useRouter();
 
@@ -147,51 +129,12 @@ const Reviews = ({ bike, reviews, className }: ReviewsProps) => {
           rating: rating,
           text: text,
           uid: userData.uid,
+          createdAt: Timestamp.fromDate(new Date()),
         },
       ),
     ]);
 
     await fetch(`/api/bikes/${bike.id}`);
-
-    // await runTransaction(db, async (transaction) => {
-    //   const bikeRef = doc(
-    //     db,
-    //     'bikes',
-    //     bikeTypes.find((type) => {
-    //       if (type.label === bike.type) return true;
-    //       else return false;
-    //     })!.value,
-    //     bike.id,
-    //   );
-    //   const bikeSnap = await transaction.get(bikeRef);
-
-    //   const newRating =
-    //     (bikeSnap.data()?.rating + rating) / (reviews.length + 1);
-    //   transaction.update(bikeRef, {
-    //     rating: newRating,
-    //   });
-    // });
-
-    // await addDoc(
-    //   collection(
-    //     db,
-    //     'bikes',
-    //     bikeTypes.find((type) => {
-    //       if (type.label === bike.type) return true;
-    //       else return false;
-    //     })!.value,
-    //     'models',
-    //     bike.id,
-    //     'reviews',
-    //   ),
-    //   {
-    //     displayName: userData.displayName,
-    //     photoURL: userData.photoURL,
-    //     rating: rating,
-    //     text: text,
-    //     uid: userData.uid,
-    //   },
-    // );
 
     setUploading(false);
     router.reload();
@@ -290,32 +233,29 @@ const Reviews = ({ bike, reviews, className }: ReviewsProps) => {
       <div className="mt-4 flex flex-col gap-4">
         {reviews.map((review) => {
           return (
-            <div
+            <ReviewComponent
               key={review.id}
-              className="flex min-h-[10rem] w-full rounded-md bg-accentBlue/10 p-3 tracking-tighter lg:h-full lg:rounded-3xl xl:p-6"
-            >
-              <div className="flex h-full w-fit flex-col items-center justify-evenly">
-                <Avatar imageSrc={review.photoURL} />
-                <FlagIcon className="h-6 w-6 text-redDanger" />
-              </div>
-              <div className="divider divider-horizontal h-full" />
-              <div className="flex flex-col justify-between">
-                <div>
-                  <div className="text-lg font-bold">
-                    <Link href={`/users/${review.uid}`}>
-                      <a className="underline">{review.displayName} </a>
-                    </Link>
-                    left a review
-                  </div>
-                  <div>{review.text}</div>
-                </div>
-                <div className="flex">
-                  Rated{' '}
-                  <StarIcon className="ml-1 h-6 w-6 stroke-black text-gold" />
-                  {review.rating}/5
-                </div>
-              </div>
-            </div>
+              review={review}
+              reportOnClick={async () => {
+                await updateDoc(
+                  doc(
+                    db,
+                    'bikes',
+                    bikeTypes.find((type) => {
+                      if (type.label === bike.type) return true;
+                      else return false;
+                    })!.value,
+                    'models',
+                    bike.id,
+                    'reviews',
+                    review.id,
+                  ),
+                  {
+                    reported: true,
+                  },
+                );
+              }}
+            />
           );
         })}
       </div>

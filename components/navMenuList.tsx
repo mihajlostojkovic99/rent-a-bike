@@ -50,7 +50,7 @@ const NavMenuList = () => {
           <span>Clients</span>
         </li>
         <li>
-          <Link href="">
+          <Link href="/admin/reports">
             <a>Reported reviews</a>
           </Link>
         </li>
@@ -69,9 +69,6 @@ const NavMenuList = () => {
         <Link href="/user">
           <a>My profile</a>
         </Link>
-      </li>
-      <li>
-        <a className="text-electricGreen">Pending review</a>
       </li>
       <li>
         <a

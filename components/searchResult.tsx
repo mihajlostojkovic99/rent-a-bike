@@ -26,11 +26,13 @@ import { Bike } from '../lib/dbTypes';
 import BikeCard from './bikeCard';
 import { useRouter } from 'next/router';
 import { useAuth } from '../utils/useAuth';
+import { Interval } from 'date-fns';
 
 type SearchResultsProps = {
   bikeType?: string;
   location?: string;
   sort?: SearchSort;
+  interval?: Interval;
   startTime?: Date | null;
   endTime?: Date | null;
 };
@@ -39,16 +41,13 @@ const SearchResults = ({
   bikeType,
   location,
   sort = 'ascending',
-  startTime,
-  endTime,
+  interval,
 }: SearchResultsProps) => {
   const { user } = useAuth();
   const router = useRouter();
 
   const [bikes, setBikes] = useState<Bike[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-
-  // console.log(bikes);
 
   useEffect(() => {
     setLoading(true);
@@ -126,8 +125,8 @@ const SearchResults = ({
                     pathname: `/bikes/${bike.id}`,
                     query: {
                       locationId: location,
-                      startTime: startTime?.getTime(),
-                      endTime: endTime?.getTime(),
+                      startTime: (interval?.start as Date).getTime(),
+                      endTime: (interval?.end as Date).getTime(),
                     },
                   });
                 } else {

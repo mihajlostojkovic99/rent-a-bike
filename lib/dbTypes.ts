@@ -68,6 +68,7 @@ export type Review = {
   displayName: string;
   photoURL: string;
   text: string;
+  createdAt: Timestamp;
 };
 
 export type Reservation = {

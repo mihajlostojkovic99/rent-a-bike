@@ -83,7 +83,7 @@ const ManageEmployees = ({
               </div>
               <div className="divider divider-horizontal h-12"></div>
               <button
-                className={cx('btn btn-warning btn-wide', {
+                className={cx('btn btn-error btn-wide', {
                   loading: loading,
                 })}
                 onClick={async () => {
