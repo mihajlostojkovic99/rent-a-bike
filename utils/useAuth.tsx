@@ -3,23 +3,34 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  onAuthStateChanged,
   signOut,
   User as FirebaseUser,
   UserCredential,
   reauthenticateWithCredential,
-  AuthCredential,
   EmailAuthProvider,
   updatePassword,
   deleteUser,
   signInWithRedirect,
   GoogleAuthProvider,
+  getRedirectResult,
 } from 'firebase/auth';
 import nookies from 'nookies';
-import { auth, db, firebase, storage } from './firebase';
+import { auth, db, storage } from './firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import Router, { useRouter } from 'next/router';
-import { deleteDoc, doc, DocumentData, onSnapshot } from 'firebase/firestore';
+import {
+  collectionGroup,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  query,
+  setDoc,
+  Timestamp,
+  where,
+  writeBatch,
+} from 'firebase/firestore';
 import { UserData } from '../lib/dbTypes';
 import { deleteObject, ref } from 'firebase/storage';
 
@@ -32,7 +43,7 @@ type Auth = {
     email: string,
     password: string,
   ) => Promise<UserCredential | undefined>;
-  loginGoogle: () => Promise<UserCredential | undefined>;
+  loginGoogle: () => Promise<UserCredential | null>;
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
   deleteAccount: (password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -52,7 +63,7 @@ export const AuthContext = createContext<Auth>({
   // userPath: '',
   getUser: () => null,
   login: async () => undefined,
-  loginGoogle: async () => undefined,
+  loginGoogle: async () => null,
   changePassword: async () => undefined,
   deleteAccount: async () => undefined,
   logout: async () => {},
@@ -64,30 +75,45 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  // const [user, setUser] = useState<FirebaseUser | null | undefined>();
   const [user, loading] = useAuthState(auth);
   const [userData, setUserData] = useState<UserData | undefined | null>(
     undefined,
   );
-  // console.log('USEAUTH');
-  // const [userPath, setUserPath] = useState<string>('');
-  // const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
   async function login(email: string, password: string) {
     console.log('login');
     const cred = await signInWithEmailAndPassword(auth, email, password);
-    // Router.push('home');
-    // router.push('home');
-    // console.log('bbbb');
+
     return cred;
   }
 
   const loginGoogle = async () => {
-    const cred = await signInWithRedirect(auth, new GoogleAuthProvider());
-    // router.push('home');
-    // console.log('bbbb');
-    return cred;
+    await signInWithRedirect(auth, new GoogleAuthProvider());
+
+    const result = await getRedirectResult(auth);
+    if (result) {
+      // This is the signed-in user
+      const user = result.user;
+      const userSnap = await getDoc(doc(db, 'users', user.uid));
+
+      if (!userSnap.exists()) {
+        const createdAt: Date = new Date();
+        createdAt.setHours(0, 0, 0, 0);
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          createdAt: Timestamp.fromDate(createdAt),
+          balance: 0,
+          reviews: 0,
+          rides: 0,
+        });
+      } else {
+        setUserData(userSnap.data() as UserData);
+      }
+    }
+    return result;
   };
 
   async function changePassword(oldPassword: string, newPassword: string) {
@@ -100,12 +126,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   async function deleteAccount(password: string) {
     if (user && user.email) {
-      await Promise.all([
-        deleteDoc(doc(db, 'users', user.uid)),
-        deleteObject(ref(storage, `profilePictures/${user.uid}.jpeg`)),
-        deleteObject(ref(storage, `profilePictures/${user.uid}.jpg`)),
-        deleteObject(ref(storage, `profilePictures/${user.uid}.png`)),
-      ]);
+      await deleteDoc(doc(db, 'users', user.uid));
+      try {
+        await deleteObject(ref(storage, `profilePictures/${user.uid}.jpeg`));
+        await deleteObject(ref(storage, `profilePictures/${user.uid}.jpg`));
+        await deleteObject(ref(storage, `profilePictures/${user.uid}.png`));
+      } catch (error: any) {
+        if (error.code !== 'storage/object-not-found') console.error(error);
+      }
+
+      const batch = writeBatch(db);
+      const userReservationsSnap = await getDocs(
+        query(
+          collectionGroup(db, 'reservations'),
+          where('uid', '==', user.uid),
+        ),
+      );
+      userReservationsSnap.forEach((res) => {
+        batch.delete(res.ref);
+      });
+      batch.commit();
+
       const cred = EmailAuthProvider.credential(user.email, password);
       await reauthenticateWithCredential(user, cred);
       deleteUser(user).then(() => {
@@ -142,7 +183,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // setLoading(false);
       } else {
         setUserData(null);
-        // nookies.set(undefined, 'token', '', {});
+        nookies.set(undefined, 'token', '', {});
       }
     }
     fetchData();

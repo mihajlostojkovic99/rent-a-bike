@@ -541,18 +541,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       });
     });
 
-    console.log(
-      'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA SSR UserData: ',
-      userData,
-    );
-    console.log(
-      'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA SSR Reservations: ',
-      reservations,
-    );
-
     return {
       props: {
-        // serverUserData: userToJSON(userData),
         serverUserDataJSON: JSON.stringify(userData),
         userPath: userRef.path,
         reservationsJSON: JSON.stringify(reservations),

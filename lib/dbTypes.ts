@@ -29,6 +29,7 @@ export type UserData = {
 };
 
 export type EmployeeData = {
+  email: string;
   uid: string;
   displayName: string;
   isAdmin: boolean;

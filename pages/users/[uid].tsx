@@ -1,47 +1,31 @@
-import { TextField, ThemeProvider } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
 import { GetServerSideProps } from 'next';
-import { useEffect, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
 import Avatar from '../../components/avatar';
 import Layout from '../../components/layout';
-import { muiTheme2 } from '../../utils/datePicker';
 import { db, profilePictures, userToJSON } from '../../utils/firebase';
 import { useAuth } from '../../utils/useAuth';
 import {
+  collectionGroup,
   doc,
   DocumentData,
-  DocumentReference,
-  DocumentSnapshot,
   getDoc,
-  Timestamp,
-  updateDoc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  where,
 } from 'firebase/firestore';
-import nookies from 'nookies';
-import cx from 'classnames';
 import { differenceInDays, differenceInYears } from 'date-fns';
-import { verifyIdToken } from '../../utils/firebaseAdmin';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { updateProfile } from 'firebase/auth';
-import { useDocumentData } from 'react-firebase-hooks/firestore';
-import PasswordPopup from '../../components/passwordPopup';
-import DeletePopup from '../../components/deletePopup';
-
-type FormData = {
-  firstName: string;
-  lastName: string;
-  birthday: Date;
-  city: string;
-  aboutMe: string;
-  profilePicture: File[];
-};
+import { Review, UserData } from '../../lib/dbTypes';
+import ReviewComponent from '../../components/review';
 
 type UserPageProps = {
-  userDetails: DocumentData;
-  userPath: string;
+  userDetailsJSON: string;
+  userReviewsJSON: string;
 };
 
-const UserPage = ({ userDetails }: UserPageProps) => {
+const AboutMePage = ({ userDetailsJSON, userReviewsJSON }: UserPageProps) => {
+  const userDetails: UserData = JSON.parse(userDetailsJSON);
+  const userReviews: Review[] = JSON.parse(userReviewsJSON);
   const { user } = useAuth();
 
   const userData = userDetails;
@@ -51,35 +35,27 @@ const UserPage = ({ userDetails }: UserPageProps) => {
     displayName,
     photoURL,
     aboutMe,
+    balance,
     birthday,
     createdAt,
     city,
     reviews,
     rides,
   } = {
-    ...(userData as UserData),
+    ...userData,
     birthday: userData.birthday
-      ? typeof userData.birthday === 'number'
-        ? new Date(userData.birthday)
-        : userData.birthday.toDate()
+      ? new Date(userData.birthday.seconds * 1000)
       : null,
-    createdAt:
-      typeof userData.createdAt === 'number'
-        ? new Date(userData.createdAt)
-        : userData.createdAt.toDate(),
+    createdAt: new Date(userData.createdAt.seconds * 1000),
     city: userData.city || 'Unknown',
     aboutMe: userData.aboutMe || '',
   };
-
-  //   console.log(sameUser);
-
-  // console.log(user);
 
   return (
     <>
       <Layout>
         <div className="mx-auto min-h-screen tracking-tight text-justBlack lg:max-w-7xl">
-          <div className="mx-2 rounded-md bg-offWhite p-3 lg:mx-0 lg:grid lg:grid-cols-[minmax(0,_3fr)_3fr_2fr] lg:grid-rows-[14rem_14rem_13rem] lg:gap-6 lg:rounded-3xl lg:p-6">
+          <div className="mx-2 rounded-md bg-offWhite p-3 lg:mx-0 lg:grid lg:grid-cols-[minmax(0,_3fr)_3fr_2fr] lg:grid-rows-[12rem_16rem_16rem] lg:gap-6 lg:rounded-3xl lg:p-6">
             <div className="flex w-full flex-col rounded-md bg-accentBlue/10 p-3 lg:row-start-1 lg:row-end-4 lg:rounded-3xl xl:p-6">
               <div className="relative">
                 <Avatar
@@ -92,12 +68,7 @@ const UserPage = ({ userDetails }: UserPageProps) => {
               </div>
 
               <div className="text-2xl font-bold tracking-tighter lg:ml-1 xl:text-4xl">
-                <>
-                  {displayName}{' '}
-                  <sup className="text-base font-extrabold text-gold lg:text-base xl:text-xl">
-                    GOLD
-                  </sup>
-                </>
+                {displayName}
               </div>
               <div className="lg:ml-1">
                 <div className="mt-3 flex items-center gap-1 text-lg font-bold">
@@ -120,10 +91,24 @@ const UserPage = ({ userDetails }: UserPageProps) => {
               </div>
             </div>
             <div className="mt-3 w-full rounded-md bg-accentBlue/10 p-3 lg:col-start-2 lg:col-end-4 lg:row-start-2 lg:row-end-4 lg:mt-0 lg:rounded-3xl">
-              <div className="mb-4 w-full text-center text-2xl font-bold">
-                Latest comments:
-              </div>
-              <div>No comments to show. wip</div>
+              {userReviews.length > 0 ? (
+                <>
+                  <div className="mb-1 w-full text-center text-2xl font-bold">
+                    My latest reviews:
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    {userReviews.map((review) => {
+                      return (
+                        <ReviewComponent key={review.id} review={review} />
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div className="mb-1 w-full text-center text-2xl font-bold">
+                  No reviews to show yet.
+                </div>
+              )}
             </div>
             <div className="mt-3 w-full rounded-md bg-accentBlue/10 p-3 lg:col-start-2 lg:col-end-4 lg:row-start-1 lg:row-end-2 lg:mt-0 lg:rounded-3xl lg:p-6">
               <div className="stats stats-vertical h-full w-full bg-accentBlue tracking-normal text-offWhite shadow lg:stats-horizontal lg:rounded-3xl">
@@ -160,19 +145,6 @@ const UserPage = ({ userDetails }: UserPageProps) => {
   );
 };
 
-type UserData = {
-  uid: string;
-  displayName: string;
-  photoURL: string;
-  aboutMe: string;
-  birthday: number;
-  createdAt: number;
-  balance: number;
-  city: string;
-  reviews: number;
-  rides: number;
-};
-
 export const getServerSideProps: GetServerSideProps = async ({
   params,
   res,
@@ -180,21 +152,44 @@ export const getServerSideProps: GetServerSideProps = async ({
   try {
     const uid = params?.uid;
 
-    const docRef = doc(db, 'users', uid as string);
-    const docSnap = await getDoc(docRef);
-    const data = docSnap.data();
+    const [userSnap, userReviewsSnap] = await Promise.all([
+      getDoc(doc(db, 'users', uid as string)),
+      getDocs(
+        query(
+          collectionGroup(db, 'reviews'),
+          where('uid', '==', uid),
+          orderBy('createdAt', 'desc'),
+          limit(3),
+        ),
+      ),
+    ]);
+    const userData: UserData = userSnap.data() as UserData;
+
+    const userReviews: Review[] = [];
+    userReviewsSnap.forEach((rev) => {
+      userReviews.push({
+        createdAt: rev.data().createdAt,
+        displayName: rev.data().displayName,
+        id: rev.id,
+        photoURL: rev.data().photoURL,
+        rating: rev.data().rating,
+        text: rev.data().text,
+        uid: rev.data().uid,
+      });
+    });
 
     return {
       props: {
-        userDetails: userToJSON(data),
-        userPath: docRef.path,
+        userDetailsJSON: JSON.stringify(userData),
+        userReviewsJSON: JSON.stringify(userReviews),
       },
     };
   } catch (err) {
+    console.log(err);
     res.writeHead(302, { location: '/' });
     res.end();
-    return { props: [] };
+    return { props: {} };
   }
 };
 
-export default UserPage;
+export default AboutMePage;

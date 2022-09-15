@@ -7,7 +7,7 @@ import bike from '../public/home_bike.jpg';
 import { useAuth } from '../../utils/useAuth';
 import { AuthCheck } from '../../utils/authCheck';
 import { verifyIdToken } from '../../utils/firebaseAdmin';
-import { db, userToJSON } from '../../utils/firebase';
+import { db, storage, userToJSON } from '../../utils/firebase';
 import {
   collection,
   collectionGroup,
@@ -17,11 +17,13 @@ import {
   DocumentReference,
   getDoc,
   getDocs,
+  increment,
   orderBy,
   query,
   Timestamp,
   updateDoc,
   where,
+  writeBatch,
 } from 'firebase/firestore';
 import nookies from 'nookies';
 import { Review } from '../../lib/dbTypes';
@@ -30,6 +32,8 @@ import { bikeTypes } from '../../lib/bikeTypes';
 import { useRouter } from 'next/router';
 import cx from 'classnames';
 import { useState } from 'react';
+import { deleteObject, ref } from 'firebase/storage';
+import { FirebaseError } from 'firebase/app';
 
 type ReportsProps = {
   reportedReviewsJSON: string;
@@ -45,6 +49,59 @@ const Reports: NextPage<ReportsProps> = ({
   }[] = JSON.parse(reportedReviewsJSON);
 
   const [deletingComment, setDeletingComment] = useState(false);
+  const [deletingUser, setDeletingUser] = useState(false);
+
+  const handleDeleteComment = async (reportedReview: {
+    review: Review;
+    path: string;
+  }) => {
+    const uid = reportedReview.review.uid;
+    await deleteDoc(doc(db, reportedReview.path));
+
+    const bikePath = reportedReview.path.split('/reviews/')[0];
+    const bikeId = bikePath.substring(bikePath.lastIndexOf('/') + 1);
+    const bikeReviewsSnap = await getDocs(collection(db, bikePath, 'reviews'));
+    let total = 0;
+    bikeReviewsSnap.forEach((review) => {
+      total += review.data().rating;
+    });
+
+    updateDoc(doc(db, bikePath), {
+      rating: total / bikeReviewsSnap.size,
+    });
+
+    updateDoc(doc(db, 'users', uid), {
+      reviews: increment(-1),
+    });
+
+    fetch(`/api/bikes/${bikeId}`);
+  };
+
+  const handleDeleteUser = async (reportedReview: {
+    review: Review;
+    path: string;
+  }) => {
+    const uid = reportedReview.review.uid;
+    fetch(`/api/admin/deleteUser/${uid}`);
+    deleteDoc(doc(db, 'users', uid));
+    try {
+      await deleteObject(ref(storage, `profilePictures/${uid}.jpeg`));
+      await deleteObject(ref(storage, `profilePictures/${uid}.jpg`));
+      await deleteObject(ref(storage, `profilePictures/${uid}.png`));
+    } catch (error: any) {
+      if (error.code !== 'storage/object-not-found') console.error(error);
+    }
+    const batch = writeBatch(db);
+    const userReservationsSnap = await getDocs(
+      query(collectionGroup(db, 'reservations'), where('uid', '==', uid)),
+    );
+    userReservationsSnap.forEach((res) => {
+      batch.delete(res.ref);
+    });
+    batch.commit();
+    //Kad se obrise user azuriraj potencijalno [userId] rutu za profil korisnika ako prebacis na ISR
+  };
+
   return (
     <Layout>
       <div className="mx-auto flex gap-4 rounded-md bg-offWhite p-3 tracking-tighter text-justBlack lg:max-w-7xl lg:rounded-3xl lg:p-6">
@@ -76,23 +133,8 @@ const Reports: NextPage<ReportsProps> = ({
                     })}
                     onClick={async () => {
                       setDeletingComment(true);
-                      await deleteDoc(doc(db, reportedReview.path));
-                      const bikePath =
-                        reportedReview.path.split('/reviews/')[0];
-                      const bikeReviewsSnap = await getDocs(
-                        collection(db, bikePath, 'reviews'),
-                      );
 
-                      let total = 0;
-                      let cnt = 0;
-                      bikeReviewsSnap.forEach((review) => {
-                        cnt++;
-                        total += review.data().rating;
-                      });
-
-                      await updateDoc(doc(db, bikePath), {
-                        rating: total / cnt,
-                      });
+                      await handleDeleteComment(reportedReview);
 
                       setDeletingComment(false);
                       router.reload();
@@ -101,16 +143,15 @@ const Reports: NextPage<ReportsProps> = ({
                     Delete comment
                   </button>
                   <button
-                    className="btn btn-error normal-case"
+                    className={cx('btn btn-error normal-case', {
+                      loading: deletingUser,
+                    })}
                     onClick={async () => {
-                      await deleteDoc(doc(db, reportedReview.path));
-                      await fetch(
-                        `/api/admin/deleteUser/${reportedReview.review.uid}`,
-                      );
-                      await deleteDoc(
-                        doc(db, 'users', reportedReview.review.uid),
-                      );
-                      // POBRISI SVE OSTALO ZA USEROM I PROVERI JEL RADI OVO
+                      setDeletingUser(true);
+                      await handleDeleteComment(reportedReview);
+                      await handleDeleteUser(reportedReview);
+                      setDeletingUser(false);
+                      router.reload();
                     }}
                   >
                     Delete comment {'&'} user

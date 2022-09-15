@@ -72,6 +72,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           uid: emp.data().uid,
           displayName: emp.data().displayName,
           isAdmin: emp.data().isAdmin,
+          email: emp.data().email,
         });
       }
     });

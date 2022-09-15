@@ -5,6 +5,7 @@ import {
   collectionGroup,
   doc,
   getDocs,
+  increment,
   limit,
   query,
   runTransaction,
@@ -132,6 +133,9 @@ const Reviews = ({ bike, reviews, className }: ReviewsProps) => {
           createdAt: Timestamp.fromDate(new Date()),
         },
       ),
+      updateDoc(doc(db, 'users', userData.uid), {
+        reviews: increment(1)
+      })
     ]);
 
     await fetch(`/api/bikes/${bike.id}`);

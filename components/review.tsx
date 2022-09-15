@@ -1,10 +1,8 @@
 import { FlagIcon, StarIcon } from '@heroicons/react/solid';
-import { doc, updateDoc } from 'firebase/firestore';
+import Image from 'next/image';
 import Link from 'next/link';
-import { bikeTypes } from '../lib/bikeTypes';
 import { Review } from '../lib/dbTypes';
-import { db } from '../utils/firebase';
-import Avatar from './avatar';
+import cx from 'classnames';
 
 type ReviewProps = {
   review: Review;
@@ -14,9 +12,25 @@ type ReviewProps = {
 
 const ReviewComponent = ({ review, reportOnClick, children }: ReviewProps) => {
   return (
-    <div className="flex min-h-[10rem] w-full rounded-md bg-accentBlue/10 p-3 tracking-tighter lg:h-full lg:rounded-3xl xl:p-6">
+    <div
+      className={cx(
+        'flex w-full rounded-md bg-accentBlue/10 p-3 tracking-tighter lg:h-full lg:rounded-3xl xl:p-6',
+        reportOnClick !== undefined ? 'min-h-[10rem]' : 'min-h-[9.2rem]',
+      )}
+    >
       <div className="flex h-full w-fit flex-col items-center justify-evenly">
-        <Avatar imageSrc={review.photoURL} />
+        <div className="avatar">
+          <div className="mask mask-squircle relative w-14 bg-accentBlue">
+            <Image
+              src={review.photoURL}
+              alt="DELETED"
+              layout="fill"
+              objectFit="cover"
+              objectPosition="bottom"
+            />
+          </div>
+        </div>
+
         {reportOnClick !== undefined && (
           <>
             <label
@@ -62,8 +76,8 @@ const ReviewComponent = ({ review, reportOnClick, children }: ReviewProps) => {
         <div>
           <div className="text-lg font-bold">
             <Link href={`/users/${review.uid}`}>
-              <a className="underline">{review.displayName} </a>
-            </Link>
+              <a className="underline">{review.displayName}</a>
+            </Link>{' '}
             left a review
           </div>
           <div>{review.text}</div>

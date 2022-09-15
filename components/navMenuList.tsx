@@ -9,6 +9,9 @@ const NavMenuList = () => {
   if (userData?.isAdmin) {
     return (
       <>
+        <li className="menu-title">
+          <span>Navigation</span>
+        </li>
         <li>
           <Link href="/admin">
             <a>Home</a>
@@ -31,11 +34,11 @@ const NavMenuList = () => {
             <a>Bikes</a>
           </Link>
         </li>
-        <li>
+        {/* <li>
           <Link href="">
             <a>Inventory</a>
           </Link>
-        </li>
+        </li> */}
         <li>
           <Link href="/admin/locations">
             <a>Locations</a>
@@ -66,8 +69,13 @@ const NavMenuList = () => {
         </Link>
       </li>
       <li>
+        <Link href={`/users/${userData?.uid}`}>
+          <a>View Profile</a>
+        </Link>
+      </li>
+      <li>
         <Link href="/user">
-          <a>My profile</a>
+          <a>Settings</a>
         </Link>
       </li>
       <li>

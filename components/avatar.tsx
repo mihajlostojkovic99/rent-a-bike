@@ -66,7 +66,7 @@ const Avatar = ({
         ) : typeof imageSrc === 'string' ? (
           <Image
             src={imageSrc}
-            alt="Picture"
+            alt="DELETED"
             layout="fill"
             objectFit="cover"
             objectPosition="bottom"

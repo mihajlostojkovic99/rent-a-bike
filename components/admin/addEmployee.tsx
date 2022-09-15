@@ -81,6 +81,7 @@ const AddEmployee = ({ className }: AddEmployeeProps) => {
       displayName: `${data.firstName} ${data.lastName}`,
       createdAt: Timestamp.fromDate(createdAt),
       isAdmin: true,
+      email: user.email,
     });
 
     setLoading(false);

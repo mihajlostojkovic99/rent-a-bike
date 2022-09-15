@@ -55,6 +55,12 @@ const ManageEmployees = ({
 
   const updatedEmployees = (realtimeEmployees as EmployeeData[]) || employees;
 
+  const handleDeleteEmployee = async (emp: EmployeeData) => {
+    const uid = emp.uid;
+    await fetch(`/api/admin/deleteUser/${uid}`);
+    await deleteDoc(doc(db, 'users', uid));
+  };
+
   return (
     <div
       className={cx(
@@ -82,19 +88,25 @@ const ManageEmployees = ({
                 {emp.displayName}
               </div>
               <div className="divider divider-horizontal h-12"></div>
-              <button
-                className={cx('btn btn-error btn-wide', {
-                  loading: loading,
-                })}
-                onClick={async () => {
-                  if (emp.uid === uid) return;
-                  setLoading(true);
-                  await deleteDoc(doc(db, 'users', emp.uid));
-                  setLoading(false);
-                }}
-              >
-                Delete
-              </button>
+              <div>
+                <span className="font-bold">Email: </span>
+                {emp.email}
+              </div>
+              <div className="divider divider-horizontal h-12"></div>
+              {emp.uid !== uid && (
+                <button
+                  className={cx('btn btn-error btn-wide', {
+                    loading: loading,
+                  })}
+                  onClick={async () => {
+                    setLoading(true);
+                    await handleDeleteEmployee(emp);
+                    setLoading(false);
+                  }}
+                >
+                  Delete
+                </button>
+              )}
             </div>
           );
         })}

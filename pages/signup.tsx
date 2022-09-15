@@ -42,7 +42,6 @@ const SignupPage: NextPage = () => {
 
     const createdAt: Date = new Date();
     createdAt.setHours(0, 0, 0, 0);
-    console.log(createdAt);
 
     const credentials = await signUp(data.email, data.password);
     if (!credentials) {
@@ -51,15 +50,12 @@ const SignupPage: NextPage = () => {
     }
     const user = credentials.user;
 
-    var photoURL: string | null = null;
+    let photoURL: string | null = user.photoURL;
 
     if (data.profilePicture && data.profilePicture.length > 0) {
       const photoRef = ref(
         profilePictures,
-        `${user.uid}.${
-          // data.profilePicture[0].type === 'image/png' ? 'png' : 'jpg'
-          data.profilePicture[0].type.split('/')[1]
-        }`,
+        `${user.uid}.${data.profilePicture[0].type.split('/')[1]}`,
       );
       const uploadTask = await uploadBytes(photoRef, data.profilePicture[0]);
       photoURL = await getDownloadURL(uploadTask.ref);

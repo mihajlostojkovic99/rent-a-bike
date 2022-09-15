@@ -6,19 +6,20 @@ import {
   doc,
   getDoc,
   getDocs,
+  increment,
   limit,
   orderBy,
   query,
   setDoc,
   Timestamp,
+  updateDoc,
   where,
-  writeBatch,
 } from 'firebase/firestore';
 import { GetStaticProps, NextPage } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import Layout from '../../components/layout';
-import { Bike, Location, Reservation, Review } from '../../lib/dbTypes';
+import { Bike, Reservation, Review } from '../../lib/dbTypes';
 import { db } from '../../utils/firebase';
 import { useEffect, useState } from 'react';
 import MyDateTimePicker from '../../components/myDateTimePicker';
@@ -33,7 +34,7 @@ import {
 } from 'date-fns';
 import cx from 'classnames';
 import { useAuth } from '../../utils/useAuth';
-import { bikeTypeMap, bikeTypes } from '../../lib/bikeTypes';
+import { bikeTypes } from '../../lib/bikeTypes';
 
 export async function getStaticPaths() {
   const querySnap = await getDocs(collectionGroup(db, 'models'));
@@ -243,6 +244,9 @@ const BikePage: NextPage<BikePageProps> = ({
             bikeId: bike.id,
           },
         ),
+        updateDoc(doc(db, 'users', userData.uid), {
+          rides: increment(1),
+        }),
       ]);
       console.log('Reservation created');
     } else {
