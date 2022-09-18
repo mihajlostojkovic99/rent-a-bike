@@ -153,7 +153,7 @@ const UserPage = ({
   return (
     <>
       <Layout>
-        <div className="mx-auto min-h-screen tracking-tight text-justBlack lg:max-w-7xl">
+        <div className="mx-auto tracking-tight text-justBlack lg:max-w-7xl">
           <div className="mx-2 rounded-md bg-offWhite p-3 lg:mx-0 lg:grid lg:grid-cols-[minmax(0,_3fr)_3fr_2fr] lg:grid-rows-[15rem_15rem_15rem] lg:gap-6 lg:rounded-3xl lg:p-6">
             <form
               onSubmit={handleSubmit(onSubmit)}

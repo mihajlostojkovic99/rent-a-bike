@@ -3,6 +3,7 @@ import { useAuth } from '../utils/useAuth';
 import Footer from './footer';
 import Navbar from './navbar';
 import NavMenuList from './navMenuList';
+import { BeatLoader } from 'react-spinners';
 
 type LayoutProps = {
   children?: React.ReactNode;
@@ -10,6 +11,7 @@ type LayoutProps = {
 
 const Layout = ({ children }: LayoutProps) => {
   const { user, userData } = useAuth();
+  console.log(children);
 
   if (userData?.isAdmin) {
     return (
@@ -44,9 +46,15 @@ const Layout = ({ children }: LayoutProps) => {
       </Head>
       <div className="drawer drawer-end">
         <input id="my-drawer" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content relative z-20 overflow-x-hidden">
+        <div className="drawer-content relative z-20 flex min-h-screen flex-col overflow-x-hidden">
           <Navbar />
-          <main>{children}</main>
+          <main className="grow">
+            {children ?? (
+              <div className="mx-auto">
+                <BeatLoader color="#008CEE" />
+              </div>
+            )}
+          </main>
           {user !== undefined && <Footer />}
         </div>
         <div className="drawer-side lg:hidden">

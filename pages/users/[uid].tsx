@@ -54,7 +54,7 @@ const AboutMePage = ({ userDetailsJSON, userReviewsJSON }: UserPageProps) => {
   return (
     <>
       <Layout>
-        <div className="mx-auto min-h-screen tracking-tight text-justBlack lg:max-w-7xl">
+        <div className="mx-auto tracking-tight text-justBlack lg:max-w-7xl">
           <div className="mx-2 rounded-md bg-offWhite p-3 lg:mx-0 lg:grid lg:grid-cols-[minmax(0,_3fr)_3fr_2fr] lg:grid-rows-[12rem_16rem_16rem] lg:gap-6 lg:rounded-3xl lg:p-6">
             <div className="flex w-full flex-col rounded-md bg-accentBlue/10 p-3 lg:row-start-1 lg:row-end-4 lg:rounded-3xl xl:p-6">
               <div className="relative">
