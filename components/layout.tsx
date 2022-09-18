@@ -23,7 +23,13 @@ const Layout = ({ children }: LayoutProps) => {
           <input id="my-drawer" type="checkbox" className="drawer-toggle" />
           <div className="drawer-content relative z-20 overflow-x-hidden">
             <Navbar />
-            <main>{children}</main>
+            <main>
+              {children ?? (
+                <div className="mt-40 text-center">
+                  <BeatLoader color="#008CEE" />
+                </div>
+              )}
+            </main>
           </div>
           <div className="drawer-side">
             <label
@@ -50,7 +56,7 @@ const Layout = ({ children }: LayoutProps) => {
           <Navbar />
           <main className="grow">
             {children ?? (
-              <div className="mx-auto">
+              <div className="mt-40 text-center">
                 <BeatLoader color="#008CEE" />
               </div>
             )}

@@ -1,5 +1,4 @@
-import { TextField, ThemeProvider } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
+// import { ThemeProvider } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import Avatar from '../components/avatar';
@@ -8,7 +7,6 @@ import { muiTheme2 } from '../utils/datePicker';
 import { db, profilePictures, userToJSON } from '../utils/firebase';
 import { useAuth } from '../utils/useAuth';
 import {
-  collection,
   collectionGroup,
   doc,
   DocumentData,
@@ -240,30 +238,28 @@ const UserPage = ({
                   <div className="mt-3 flex items-center gap-1 text-lg font-bold">
                     <div>Age: </div>
                     {editMode ? (
-                      <ThemeProvider theme={muiTheme2}>
-                        <Controller
-                          name="birthday"
-                          control={control}
-                          rules={{}}
-                          render={({
-                            field: { onChange, name, value },
-                            formState: { errors },
-                          }) => (
-                            <>
-                              <MyDatePicker
-                                value={value || ''}
-                                onChange={(newDate) => {
-                                  onChange(newDate);
-                                }}
-                                theme={muiTheme2}
-                              />
-                              {errors.birthday && (
-                                <span>{errors.birthday.message}</span>
-                              )}
-                            </>
-                          )}
-                        ></Controller>
-                      </ThemeProvider>
+                      <Controller
+                        name="birthday"
+                        control={control}
+                        rules={{}}
+                        render={({
+                          field: { onChange, name, value },
+                          formState: { errors },
+                        }) => (
+                          <>
+                            <MyDatePicker
+                              value={value || ''}
+                              onChange={(newDate) => {
+                                onChange(newDate);
+                              }}
+                              theme={muiTheme2}
+                            />
+                            {errors.birthday && (
+                              <span>{errors.birthday.message}</span>
+                            )}
+                          </>
+                        )}
+                      ></Controller>
                     ) : (
                       <span className="font-normal">
                         {birthday
