@@ -20,6 +20,7 @@ import {
   setHours,
   setMinutes,
 } from 'date-fns';
+import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 
 type SearchboxProps = {
   className?: string;
@@ -127,7 +128,9 @@ const Searchbox = ({ className }: SearchboxProps) => {
   const onSubmit = (data: FormData) => {
     console.log(data);
     if (data.type) setBikeType(data.type.value);
+    else setBikeType(undefined);
     if (data.location) setLocation(data.location.value);
+    else setLocation(undefined);
     if (data.interval) {
       const startDate = data.interval.start as Date;
       let endDate = data.interval.end as Date;
@@ -336,8 +339,9 @@ const Searchbox = ({ className }: SearchboxProps) => {
             )}
           </div>
           <div className=" mx-2 mt-8 mb-5 lg:my-auto lg:ml-12 lg:mr-0">
-            <button className="btn btn-accent h-16 w-full text-3xl lg:h-10 lg:w-28 lg:text-base">
+            <button className="btn btn-accent h-16 w-full gap-4 text-3xl lg:h-10 lg:gap-1 lg:text-base">
               Search
+              <MagnifyingGlassIcon className="h-8 w-8 lg:h-5 lg:w-5" />
             </button>
           </div>
         </div>

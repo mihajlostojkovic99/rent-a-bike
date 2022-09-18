@@ -43,7 +43,7 @@ const Index: NextPage = () => {
             <div className="mx-auto flex w-fit flex-col items-center text-center text-5xl font-extrabold tracking-tight text-white lg:text-7xl">
               <div>Book your next ride with us.</div>
               <Link href="/signup" passHref>
-                <button className="btn btn-accent outline mt-12 h-16 w-48 text-3xl normal-case outline-2 outline-white/40 lg:mt-20 lg:h-24 lg:w-72 lg:text-5xl">
+                <button className="btn outline btn-accent mt-12 h-16 w-48 text-3xl normal-case outline-2 outline-white/40 lg:mt-20 lg:h-24 lg:w-72 lg:text-5xl">
                   Join now
                 </button>
               </Link>

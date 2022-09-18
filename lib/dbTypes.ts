@@ -1,19 +1,5 @@
 import { Timestamp } from 'firebase/firestore';
 
-// export type UserData = {
-//   uid: string;
-//   displayName: string;
-//   photoURL: string;
-//   aboutMe: string;
-//   birthday: number;
-//   createdAt: number;
-//   balance: number;
-//   city: string;
-//   reviews: number;
-//   rides: number;
-//   isAdmin: boolean;
-// };
-
 export type UserData = {
   uid: string;
   displayName: string;
@@ -80,4 +66,6 @@ export type Reservation = {
   endDate: Timestamp;
   bikeModel: string;
   location: string;
+  bill: number;
+  createdAt: Timestamp;
 };

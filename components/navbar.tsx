@@ -4,6 +4,7 @@ import { useAuth } from '../utils/useAuth';
 import Avatar from './avatar';
 import NavMenuList from './navMenuList';
 import LogInPopup from './logInPopup';
+import { ArrowLeftOnRectangleIcon } from '@heroicons/react/20/solid';
 
 type NavbarProps = {
   className?: string;
@@ -26,7 +27,7 @@ const Navbar = ({ className }: NavbarProps) => {
           </Link>
           <label
             htmlFor="my-drawer"
-            className="btn btn-circle btn-accent lg:hidden"
+            className="btn btn-accent btn-circle lg:hidden"
           >
             Menu
           </label>
@@ -72,9 +73,10 @@ const Navbar = ({ className }: NavbarProps) => {
             <li>
               <label
                 htmlFor="my-modal"
-                className="btn btn-ghost text-base normal-case"
+                className="btn btn-ghost gap-2 text-base normal-case"
               >
                 Log in
+                <ArrowLeftOnRectangleIcon className="h-5 w-5" />
               </label>
             </li>
             <li>

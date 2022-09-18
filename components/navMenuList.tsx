@@ -2,6 +2,12 @@ import Link from 'next/link';
 import Router from 'next/router';
 import { useState } from 'react';
 import { useAuth } from '../utils/useAuth';
+import { HomeIcon, FlagIcon } from '@heroicons/react/24/solid';
+import {
+  UserIcon,
+  Cog6ToothIcon,
+  ArrowRightOnRectangleIcon,
+} from '@heroicons/react/20/solid';
 
 const NavMenuList = () => {
   const { userData, logout } = useAuth();
@@ -14,7 +20,10 @@ const NavMenuList = () => {
         </li>
         <li>
           <Link href="/admin">
-            <a>Home</a>
+            <a>
+              <HomeIcon className="h-5 w-5" />
+              Home
+            </a>
           </Link>
         </li>
         <li>
@@ -23,6 +32,7 @@ const NavMenuList = () => {
               logout();
             }}
           >
+            <ArrowRightOnRectangleIcon className="h-5 w-5" />
             Log out
           </a>
         </li>
@@ -54,7 +64,10 @@ const NavMenuList = () => {
         </li>
         <li>
           <Link href="/admin/reports">
-            <a>Reported reviews</a>
+            <a>
+              <FlagIcon className="h-5 w-5" />
+              Reported reviews
+            </a>
           </Link>
         </li>
       </>
@@ -65,17 +78,26 @@ const NavMenuList = () => {
     <>
       <li>
         <Link href="/home">
-          <a>Home</a>
+          <a>
+            <HomeIcon className="h-5 w-5" />
+            Home
+          </a>
         </Link>
       </li>
       <li>
         <Link href={`/users/${userData?.uid}`}>
-          <a>View Profile</a>
+          <a>
+            <UserIcon className="h-5 w-5" />
+            View Profile
+          </a>
         </Link>
       </li>
       <li>
         <Link href="/user">
-          <a>Settings</a>
+          <a>
+            <Cog6ToothIcon className="h-5 w-5" />
+            Settings
+          </a>
         </Link>
       </li>
       <li>
@@ -84,6 +106,7 @@ const NavMenuList = () => {
             logout().then(() => Router.push('/'));
           }}
         >
+          <ArrowRightOnRectangleIcon className="h-5 w-5" />
           Log out
         </a>
       </li>

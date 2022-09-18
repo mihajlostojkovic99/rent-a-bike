@@ -1,4 +1,4 @@
-import { FlagIcon, StarIcon } from '@heroicons/react/solid';
+import { FlagIcon, StarIcon } from '@heroicons/react/24/solid';
 import {
   addDoc,
   collection,
@@ -134,8 +134,8 @@ const Reviews = ({ bike, reviews, className }: ReviewsProps) => {
         },
       ),
       updateDoc(doc(db, 'users', userData.uid), {
-        reviews: increment(1)
-      })
+        reviews: increment(1),
+      }),
     ]);
 
     await fetch(`/api/bikes/${bike.id}`);

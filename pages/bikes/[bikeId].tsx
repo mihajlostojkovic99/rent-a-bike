@@ -1,4 +1,4 @@
-import { LightningBoltIcon } from '@heroicons/react/solid';
+import { BoltIcon } from '@heroicons/react/24/solid';
 import {
   addDoc,
   collection,
@@ -200,9 +200,10 @@ const BikePage: NextPage<BikePageProps> = ({
         bikeModel: res.data().bikeModel,
         location: res.data().location,
         bikeId: res.data().bikeId,
+        bill: res.data().bill,
+        createdAt: res.data().createdAt,
       });
     });
-    console.log('Fetched reservations: ', reservations);
 
     var parallelReservations = 0;
 
@@ -242,6 +243,8 @@ const BikePage: NextPage<BikePageProps> = ({
               locationSnap.data()?.city
             }`,
             bikeId: bike.id,
+            bill: total,
+            createdAt: Timestamp.fromDate(new Date()),
           },
         ),
         updateDoc(doc(db, 'users', userData.uid), {
@@ -297,7 +300,7 @@ const BikePage: NextPage<BikePageProps> = ({
                   <div className="flex items-center">
                     Yes
                     <div className="stroke-black text-electricGreen">
-                      <LightningBoltIcon className="h-6 w-6" />
+                      <BoltIcon className="h-6 w-6" />
                     </div>
                   </div>
                 ) : (

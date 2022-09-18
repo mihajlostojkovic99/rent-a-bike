@@ -25,8 +25,8 @@ const Bikes: NextPage<BikesProps> = ({ locations, bikes }: BikesProps) => {
 
   return (
     <Layout>
-      <div className="mx-auto min-h-screen tracking-tighter text-justBlack lg:max-w-7xl">
-        <div className="mx-2 flex flex-col gap-6 rounded-md bg-offWhite p-3 lg:mx-0 lg:grid lg:grid-cols-[1fr_1fr] lg:grid-rows-[2fr_1fr] lg:gap-6 lg:rounded-3xl lg:p-6">
+      <div className="mx-auto tracking-tighter text-justBlack lg:max-w-7xl">
+        <div className="mx-2 mb-4 flex flex-col gap-6 rounded-md bg-offWhite p-3 lg:mx-0 lg:grid lg:grid-cols-[1fr_1fr] lg:grid-rows-[2fr_1fr] lg:gap-6 lg:rounded-3xl lg:p-6">
           <AddBike className="col-start-1 col-end-3" />
           <BikeStock locations={locations} bikes={bikes} />
         </div>

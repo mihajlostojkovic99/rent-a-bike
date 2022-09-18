@@ -42,7 +42,7 @@ const AddLocation = ({ locations, className }: AddLocationProps) => {
   return (
     <div
       className={cx(
-        'w-full rounded-md bg-accentBlue/10 p-3 lg:rounded-3xl xl:p-6',
+        'w-full rounded-md bg-accentBlue/20 p-3 shadow lg:rounded-3xl xl:p-6',
         className,
       )}
     >

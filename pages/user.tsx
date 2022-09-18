@@ -36,6 +36,7 @@ import nookies from 'nookies';
 import { verifyIdToken } from '../utils/firebaseAdmin';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
 import { Reservation, UserData } from '../lib/dbTypes';
+import MyDatePicker from '../components/myDatePicker';
 
 type FormData = {
   firstName: string;
@@ -229,9 +230,9 @@ const UserPage = ({
                   ) : (
                     <>
                       {displayName}{' '}
-                      <sup className="text-base font-extrabold text-gold lg:text-base xl:text-xl">
+                      {/* <sup className="text-base font-extrabold text-gold lg:text-base xl:text-xl">
                         GOLD
-                      </sup>
+                      </sup> */}
                     </>
                   )}
                 </div>
@@ -249,21 +250,12 @@ const UserPage = ({
                             formState: { errors },
                           }) => (
                             <>
-                              <DatePicker
-                                renderInput={(props) => (
-                                  <TextField
-                                    size="small"
-                                    className="w-48 tracking-tight lg:w-52"
-                                    {...props}
-                                  />
-                                )}
-                                inputFormat={'dd/MM/yyyy'}
-                                disableFuture
+                              <MyDatePicker
                                 value={value || ''}
                                 onChange={(newDate) => {
                                   onChange(newDate);
                                 }}
-                                label="Birthday"
+                                theme={muiTheme2}
                               />
                               {errors.birthday && (
                                 <span>{errors.birthday.message}</span>
@@ -394,7 +386,7 @@ const UserPage = ({
             <div className="mt-3 flex w-full flex-col gap-2 rounded-md bg-accentBlue/10 p-2 lg:col-start-2 lg:col-end-3 lg:row-start-2 lg:row-end-4 lg:mt-0 lg:rounded-3xl">
               {reservations.length > 0 ? (
                 <div className="w-full text-center text-2xl font-bold">
-                  My reservations
+                  My reservations.
                 </div>
               ) : (
                 <div className="w-full text-center text-2xl font-bold">
@@ -415,7 +407,15 @@ const UserPage = ({
                       },
                     )}
                   >
-                    <div className="text-center">
+                    <div className="relative text-center">
+                      {isWithinInterval(new Date(), {
+                        start: new Date(res.startDate.seconds * 1000),
+                        end: new Date(res.endDate.seconds * 1000),
+                      }) && (
+                        <div className="badge badge-accent absolute -top-2 -right-2 font-semibold uppercase tracking-normal">
+                          active
+                        </div>
+                      )}
                       <div>
                         Bike:{' '}
                         <span className="font-bold text-accentBlue">
@@ -538,6 +538,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         bikeModel: res.data().bikeModel,
         location: res.data().location,
         bikeId: res.data().bikeId,
+        bill: res.data().bill,
+        createdAt: res.data().createdAt,
       });
     });
 

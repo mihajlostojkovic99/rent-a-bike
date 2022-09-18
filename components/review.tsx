@@ -1,4 +1,4 @@
-import { FlagIcon, StarIcon } from '@heroicons/react/solid';
+import { FlagIcon, StarIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Review } from '../lib/dbTypes';
@@ -35,7 +35,7 @@ const ReviewComponent = ({ review, reportOnClick, children }: ReviewProps) => {
           <>
             <label
               htmlFor="report"
-              className="btn btn-circle btn-outline btn-error btn-sm"
+              className="btn btn-outline btn-error btn-circle btn-sm"
             >
               <FlagIcon className="h-6 w-6" />
             </label>

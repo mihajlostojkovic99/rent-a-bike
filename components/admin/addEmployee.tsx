@@ -90,7 +90,7 @@ const AddEmployee = ({ className }: AddEmployeeProps) => {
   return (
     <div
       className={cx(
-        'w-full rounded-md bg-accentBlue/10 p-3 lg:rounded-3xl xl:p-6',
+        'w-full rounded-md bg-accentBlue/20 p-3 shadow lg:rounded-3xl xl:p-6',
         className,
       )}
     >
@@ -98,7 +98,7 @@ const AddEmployee = ({ className }: AddEmployeeProps) => {
         Add a new employee.
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="form-control mb-16">
+      <form onSubmit={handleSubmit(onSubmit)} className="form-control">
         {/*EMAIL INPUT*/}
         <label className="label">
           <span className="label-text text-accentBlue">Write the email:</span>

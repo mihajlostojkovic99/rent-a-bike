@@ -1,4 +1,4 @@
-import { LightningBoltIcon, StarIcon } from '@heroicons/react/solid';
+import { BoltIcon, StarIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import cx from 'classnames';
 import { Bike } from '../lib/dbTypes';
@@ -6,7 +6,7 @@ import { useAuth } from '../utils/useAuth';
 
 type BikeCardProps = {
   bike: Bike;
-  onClick: () => void;
+  onClick?: () => void;
 };
 
 const BikeCard = ({ bike, onClick }: BikeCardProps) => {
@@ -28,7 +28,7 @@ const BikeCard = ({ bike, onClick }: BikeCardProps) => {
       </div>
       {bike.isElectric && (
         <div className="absolute right-0 m-2 stroke-black text-electricGreen">
-          <LightningBoltIcon className="h-6 w-6" />
+          <BoltIcon className="h-6 w-6" />
         </div>
       )}
       {bike.photoURL && (
@@ -60,15 +60,15 @@ const BikeCard = ({ bike, onClick }: BikeCardProps) => {
             <span className="text-justBlack/40">/ hour</span>
           </div>
           {user ? (
-            <button
-              data-theme={bike.isElectric ? 'greentheme' : 'mytheme'}
-              className="btn btn-accent w-full text-2xl normal-case tracking-tighter"
-              onClick={() => {
-                onClick();
-              }}
-            >
-              Find out more
-            </button>
+            onClick !== undefined && (
+              <button
+                data-theme={bike.isElectric ? 'greentheme' : 'mytheme'}
+                className="btn btn-accent w-full text-2xl normal-case tracking-tighter"
+                onClick={onClick}
+              >
+                Find out more
+              </button>
+            )
           ) : (
             <label
               htmlFor="my-modal"

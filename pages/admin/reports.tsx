@@ -105,7 +105,7 @@ const Reports: NextPage<ReportsProps> = ({
   return (
     <Layout>
       <div className="mx-auto flex gap-4 rounded-md bg-offWhite p-3 tracking-tighter text-justBlack lg:max-w-7xl lg:rounded-3xl lg:p-6">
-        <div className="flex w-full flex-col rounded-md bg-accentBlue/10 p-3 lg:rounded-3xl xl:p-6">
+        <div className="flex w-full flex-col rounded-md bg-accentBlue/20 p-3 shadow lg:rounded-3xl xl:p-6">
           <div className="mb-4 w-full text-center text-3xl font-extrabold tracking-tighter">
             Reported reviews.
           </div>

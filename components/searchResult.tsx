@@ -10,7 +10,7 @@ import {
   where,
 } from 'firebase/firestore';
 import Image from 'next/image';
-import { StarIcon, LightningBoltIcon } from '@heroicons/react/solid';
+import { StarIcon, BoltIcon } from '@heroicons/react/24/solid';
 import React, {
   Dispatch,
   forwardRef,
@@ -27,6 +27,7 @@ import BikeCard from './bikeCard';
 import { useRouter } from 'next/router';
 import { useAuth } from '../utils/useAuth';
 import { Interval } from 'date-fns';
+import { BeatLoader } from 'react-spinners';
 
 type SearchResultsProps = {
   bikeType?: string;
@@ -111,7 +112,9 @@ const SearchResults = ({
   return (
     <div className="mx-auto mt-8 flex max-w-7xl flex-wrap gap-8 rounded-lg bg-offWhite p-4 text-base text-black lg:rounded-3xl lg:p-8">
       {loading ? (
-        <>Loading...</>
+        <div className="mx-auto">
+          <BeatLoader color="#008CEE" />
+        </div>
       ) : (
         bikes.map((bike) => {
           return (

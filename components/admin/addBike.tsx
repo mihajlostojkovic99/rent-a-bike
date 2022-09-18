@@ -105,7 +105,7 @@ const AddBike = ({ className }: AddBikeType) => {
   return (
     <div
       className={cx(
-        'flex w-full flex-col items-center rounded-md bg-accentBlue/10 p-3 lg:rounded-3xl xl:p-6',
+        'flex w-full flex-col items-center rounded-md bg-accentBlue/20 p-3 shadow lg:rounded-3xl xl:p-6',
         className,
       )}
     >
