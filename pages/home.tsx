@@ -75,7 +75,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         redirect: {
           destination: 'admin',
         },
-        props: [],
+        props: {},
       };
     }
 
@@ -89,7 +89,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       redirect: {
         destination: '/',
       },
-      props: [],
+      props: {},
     };
   }
 };
