@@ -32,11 +32,13 @@ import {
 import {
   compareAsc,
   endOfDay,
+  endOfToday,
   endOfYesterday,
   Interval,
   isWithinInterval,
   lastDayOfMonth,
   startOfMonth,
+  startOfToday,
   subDays,
 } from 'date-fns';
 import { Bike } from '../../lib/dbTypes';
@@ -268,10 +270,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       }
 
       if (
-        compareAsc(
+        isWithinInterval(
           new Date((res.data().startDate as Timestamp).seconds * 1000),
-          new Date(),
-        ) === 1
+          {
+            start: startOfToday(),
+            end: endOfToday(),
+          },
+        )
       ) {
         todayReservations.push({
           bikeId: res.data().bikeId,
