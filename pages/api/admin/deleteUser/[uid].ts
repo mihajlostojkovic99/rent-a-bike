@@ -8,8 +8,6 @@ export default async function handler(
   const { uid } = req.query;
   if (typeof uid !== 'string') return;
 
-  //   const firestore = admin.firestore();
-
   try {
     await admin.auth().deleteUser(uid);
     res.status(200).json('User deleted');

@@ -2,8 +2,16 @@ import Select from 'react-select';
 import { Bike, Location } from '../../lib/dbTypes';
 import cx from 'classnames';
 import { useEffect, useState } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  Timestamp,
+} from 'firebase/firestore';
 import { db } from '../../utils/firebase';
+import { Interval, isWithinInterval } from 'date-fns';
 
 export const selectStyles = {
   control: (styles: any, { isDisabled, isFocused, isSelected }: any) => ({
@@ -36,13 +44,13 @@ const BikeStock = ({ locations, bikes, className }: BikeStockType) => {
   const [bikeId, setBikeId] = useState<string | undefined>(undefined);
   const [locationId, setLocationId] = useState<string | undefined>(undefined);
   const [total, setTotal] = useState<number | undefined>(undefined);
-  const [oldTotal, setOldTotal] = useState<number | undefined>(undefined);
+  const [oldTotal, setOldTotal] = useState<number>(0);
 
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!bikeId || !locationId) {
-      setOldTotal(undefined);
+      setOldTotal(0);
       return;
     }
 
@@ -52,7 +60,7 @@ const BikeStock = ({ locations, bikes, className }: BikeStockType) => {
       if (docSnap.exists()) {
         setOldTotal(docSnap.data().total);
       } else {
-        setOldTotal(undefined);
+        setOldTotal(0);
       }
     };
 
@@ -60,16 +68,25 @@ const BikeStock = ({ locations, bikes, className }: BikeStockType) => {
   }, [bikeId, locationId]);
 
   const clickHandler = async () => {
-    if (!bikeId || !locationId || !total) return;
-    console.log(
-      'bikeId: ',
-      bikeId,
-      'locationId: ',
-      locationId,
-      'total: ',
-      total,
-    );
+    if (!bikeId || !locationId || !total || !oldTotal || total < 0) return;
     setLoading(true);
+    if (total < oldTotal) {
+      const resSnap = await getDocs(
+        collection(db, 'stock', `${bikeId}_${locationId}`, 'reservations'),
+      );
+      let overlap = 0;
+      resSnap.forEach((res) => {
+        const interval: Interval = {
+          start: (res.data().startDate as Timestamp).seconds * 1000,
+          end: (res.data().endDate as Timestamp).seconds * 1000,
+        };
+        if (isWithinInterval(new Date(), interval)) overlap++;
+      });
+      if (overlap > total) {
+        console.log('OPERATION NOT PERMITTED, BIKES ARE RENTED OUT CURRENTLY');
+        return;
+      }
+    }
     await setDoc(doc(db, 'stock', `${bikeId}_${locationId}`), {
       bikeId: bikeId,
       locationId: locationId,
@@ -126,7 +143,9 @@ const BikeStock = ({ locations, bikes, className }: BikeStockType) => {
             disabled={!bikeId || !locationId ? true : false}
             onChange={(e) => setTotal(parseInt(e.target.value))}
           />
-          {oldTotal && <div>Current number of bikes is: {oldTotal}</div>}
+          {oldTotal !== undefined && (
+            <div>Current number of bikes is: {oldTotal}</div>
+          )}
         </div>
         <button
           className={cx('btn btn-accent w-full text-lg normal-case', {
