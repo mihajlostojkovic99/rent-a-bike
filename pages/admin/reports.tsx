@@ -109,57 +109,59 @@ const Reports: NextPage<ReportsProps> = ({
           <div className="mb-4 w-full text-center text-3xl font-extrabold tracking-tighter">
             Reported reviews.
           </div>
-          {reportedReviews.map((reportedReview) => {
-            return (
-              <ReviewComponent
-                key={reportedReview.review.id}
-                review={reportedReview.review}
-              >
-                <div className="btn-group btn-group-vertical ml-auto self-center">
-                  <button
-                    className="btn btn-success normal-case"
-                    onClick={async () => {
-                      await updateDoc(doc(db, reportedReview.path), {
-                        reported: false,
-                      });
-                      router.reload();
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className={cx('btn btn-accent normal-case', {
-                      loading: deletingComment,
-                    })}
-                    onClick={async () => {
-                      setDeletingComment(true);
+          <div className="flex flex-col gap-4">
+            {reportedReviews.map((reportedReview) => {
+              return (
+                <ReviewComponent
+                  key={reportedReview.review.id}
+                  review={reportedReview.review}
+                >
+                  <div className="btn-group btn-group-vertical ml-auto self-center">
+                    <button
+                      className="btn btn-success normal-case"
+                      onClick={async () => {
+                        await updateDoc(doc(db, reportedReview.path), {
+                          reported: false,
+                        });
+                        router.reload();
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className={cx('btn btn-accent normal-case', {
+                        loading: deletingComment,
+                      })}
+                      onClick={async () => {
+                        setDeletingComment(true);
 
-                      await handleDeleteComment(reportedReview);
+                        await handleDeleteComment(reportedReview);
 
-                      setDeletingComment(false);
-                      router.reload();
-                    }}
-                  >
-                    Delete comment
-                  </button>
-                  <button
-                    className={cx('btn btn-error normal-case', {
-                      loading: deletingUser,
-                    })}
-                    onClick={async () => {
-                      setDeletingUser(true);
-                      await handleDeleteComment(reportedReview);
-                      await handleDeleteUser(reportedReview);
-                      setDeletingUser(false);
-                      router.reload();
-                    }}
-                  >
-                    Delete comment {'&'} user
-                  </button>
-                </div>
-              </ReviewComponent>
-            );
-          })}
+                        setDeletingComment(false);
+                        router.reload();
+                      }}
+                    >
+                      Delete comment
+                    </button>
+                    <button
+                      className={cx('btn btn-error normal-case', {
+                        loading: deletingUser,
+                      })}
+                      onClick={async () => {
+                        setDeletingUser(true);
+                        await handleDeleteComment(reportedReview);
+                        await handleDeleteUser(reportedReview);
+                        setDeletingUser(false);
+                        router.reload();
+                      }}
+                    >
+                      Delete comment {'&'} user
+                    </button>
+                  </div>
+                </ReviewComponent>
+              );
+            })}
+          </div>
         </div>
       </div>
     </Layout>
